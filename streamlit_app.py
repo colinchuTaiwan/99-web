@@ -206,19 +206,9 @@ HTML_CONTENT = """<!DOCTYPE html>
 
       <!-- 姓名/座號 -->
       <div class="bg-blue-50/50 p-5 rounded-2xl border-2 border-indigo-100 space-y-3">
-        <h3 class="text-md font-bold text-indigo-700"><i class="fa-solid fa-user-astronaut mr-2"></i>第一步：告訴我們你是誰</h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <div>
-            <label class="block font-bold text-slate-700 text-xs mb-1">你的姓名：</label>
-            <input type="text" id="student-name" placeholder="例如：小智"
-              class="w-full px-3 py-2.5 rounded-xl border-2 border-slate-200 focus:border-indigo-400 focus:outline-none text-md font-bold transition-all">
-          </div>
-          <div>
-            <label class="block font-bold text-slate-700 text-xs mb-1">座號 / 學號：</label>
-            <input type="text" id="student-id" placeholder="例如：09"
-              class="w-full px-3 py-2.5 rounded-xl border-2 border-slate-200 focus:border-indigo-400 focus:outline-none text-md font-bold transition-all">
-          </div>
-        </div>
+        <h3 class="text-md font-bold text-indigo-700"><i class="fa-solid fa-user-astronaut mr-2"></i>第一步：輸入你的姓名</h3>
+        <input type="text" id="student-name" placeholder="例如：小智"
+          class="w-full px-3 py-2.5 rounded-xl border-2 border-slate-200 focus:border-indigo-400 focus:outline-none text-md font-bold transition-all">
       </div>
 
       <!-- 題數 -->
@@ -254,17 +244,7 @@ HTML_CONTENT = """<!DOCTYPE html>
         </div>
       </div>
 
-      <!-- 乘數範圍 -->
-      <div class="bg-pink-50/50 p-5 rounded-2xl border-2 border-pink-100 space-y-3">
-        <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-2">
-          <h3 class="text-md font-bold text-pink-700"><i class="fa-solid fa-calculator mr-2"></i>第三步：選擇乘數範圍 (可複選)</h3>
-          <div class="flex gap-2">
-            <button type="button" onclick="selectAllRanges(true)" class="text-[11px] bg-pink-100 text-pink-700 px-2 py-1 rounded-lg hover:bg-pink-200 font-bold transition-all">全選 2~9</button>
-            <button type="button" onclick="selectAllRanges(false)" class="text-[11px] bg-slate-100 text-slate-600 px-2 py-1 rounded-lg hover:bg-slate-200 font-bold transition-all">全部取消</button>
-          </div>
-        </div>
-        <div class="grid grid-cols-4 gap-2" id="range-checkboxes-container"></div>
-      </div>
+
 
       <div class="text-center pt-2">
         <button onclick="startQuiz()"
@@ -353,10 +333,7 @@ HTML_CONTENT = """<!DOCTYPE html>
             <div class="text-[10px] font-bold text-slate-400">學生姓名</div>
             <div id="res-name" class="text-base font-black text-slate-700 mt-0.5">---</div>
           </div>
-          <div class="bg-[#FFF0F5] p-2 rounded-xl border border-pink-50">
-            <div class="text-[10px] font-bold text-slate-400">座號/學號</div>
-            <div id="res-id" class="text-base font-black text-slate-700 mt-0.5">---</div>
-          </div>
+
           <div class="bg-[#FFFDF0] p-2 rounded-xl border border-amber-50">
             <div class="text-[10px] font-bold text-slate-400">答對題數</div>
             <div id="res-correct" class="text-base font-black text-slate-700 mt-0.5">---</div>
@@ -489,48 +466,16 @@ HTML_CONTENT = """<!DOCTYPE html>
     };
 
     // ── 初始化 ────────────────────────────────────────────────────────────────
-    document.addEventListener('DOMContentLoaded', () => {
-      renderRangeCheckboxes();
-    });
+    document.addEventListener('DOMContentLoaded', () => {});
 
-    function getRangeColors() {
-      return [
-        { bg:'bg-[#FEFDE8]', text:'text-yellow-800', border:'border-yellow-200' },
-        { bg:'bg-[#FFF3E0]', text:'text-orange-800', border:'border-orange-200' },
-        { bg:'bg-[#FFF0F5]', text:'text-pink-800',   border:'border-pink-200' },
-        { bg:'bg-[#F3E5F5]', text:'text-purple-800', border:'border-purple-200' },
-        { bg:'bg-[#E8F8F5]', text:'text-teal-800',   border:'border-teal-200' },
-        { bg:'bg-[#EBF5FB]', text:'text-blue-800',   border:'border-blue-200' },
-        { bg:'bg-[#F4F6F7]', text:'text-slate-800',  border:'border-slate-300' },
-        { bg:'bg-[#FFF8E1]', text:'text-amber-800',  border:'border-amber-200' },
-      ];
-    }
 
-    function renderRangeCheckboxes() {
-      const container = document.getElementById('range-checkboxes-container');
-      container.innerHTML = '';
-      getRangeColors().forEach((color, i) => {
-        const n = i + 2;
-        const checked = appState.selectedRanges.includes(n) ? 'checked' : '';
-        container.insertAdjacentHTML('beforeend', `
-          <label class="flex items-center justify-between p-2 rounded-xl border-2 cursor-pointer hover:shadow-sm ${color.bg} ${color.border}">
-            <span class="font-black text-sm ${color.text}">${n} 🚀</span>
-            <input type="checkbox" name="range-num" value="${n}" ${checked} class="w-4 h-4 accent-indigo-600 rounded cursor-pointer">
-          </label>`);
-      });
-    }
-
-    function selectAllRanges(checked) {
-      document.querySelectorAll('input[name="range-num"]').forEach(cb => cb.checked = checked);
-    }
 
     // ── 開始測驗 ──────────────────────────────────────────────────────────────
     function startQuiz() {
       const name = document.getElementById('student-name').value.trim();
-      const id   = document.getElementById('student-id').value.trim();
-      if (!name || !id) { alert('💡 請填寫姓名與座號！'); return; }
+      if (!name) { alert('💡 請填寫你的姓名！'); return; }
       appState.studentName = name;
-      appState.studentId   = id;
+      appState.studentId   = '';
 
       const countRadio = document.querySelector('input[name="question-count"]:checked');
       if (countRadio.value === 'custom') {
@@ -541,9 +486,8 @@ HTML_CONTENT = """<!DOCTYPE html>
         appState.totalQuestionCount = parseInt(countRadio.value, 10);
       }
 
-      const cbs = document.querySelectorAll('input[name="range-num"]:checked');
-      if (cbs.length === 0) { alert('💡 請至少勾選一個乘數範圍！'); return; }
-      appState.selectedRanges = Array.from(cbs).map(cb => parseInt(cb.value, 10));
+      // 固定全範圍 2~9
+      appState.selectedRanges = [2,3,4,5,6,7,8,9];
 
       generateQuizQuestions();
       appState.questionResults = [];
@@ -722,7 +666,7 @@ HTML_CONTENT = """<!DOCTYPE html>
       });
     }
 
-    // ── 選答案 ────────────────────────────────────────────────────────────────
+    // ── 選答案（答對立即結算，答錯繼續）────────────────────────────────────────
     function selectOption(qIndex, val) {
       if (appState.answered) return;
       clearInterval(appState.qTimerInterval);
@@ -732,7 +676,6 @@ HTML_CONTENT = """<!DOCTYPE html>
       const secsUsed = QUESTION_TIME - appState.qSecondsLeft;
       const correct  = val === q.correctAns;
       const earned   = correct ? Math.max(1, appState.qSecondsLeft) : 0;
-      // earned = 剩餘秒數（即 30 - 用掉秒數），最低1分
 
       appState.runningScore += earned;
       document.getElementById('running-score').textContent = appState.runningScore;
@@ -750,28 +693,40 @@ HTML_CONTENT = """<!DOCTYPE html>
       // 鎖定選項，顯示正誤
       renderOptions(q, val, true);
 
-      // 更新得分提示
       const hint = document.getElementById('q-score-hint');
       hint.classList.remove('hidden');
-      if (correct) {
-        hint.innerHTML = `<i class="fa-solid fa-star text-amber-500 mr-1"></i>答對！得 <span class="text-amber-600 font-black">${earned}</span> 分（用了 ${secsUsed} 秒）`;
-      } else {
-        hint.innerHTML = `<i class="fa-solid fa-circle-xmark text-rose-500 mr-1"></i>答錯！正確答案是 ${q.correctAns}，本題得 0 分`;
-        hint.className = 'text-xs font-bold text-rose-600';
-      }
 
-      // 啟用下一題按鈕
-      const nextBtn = document.getElementById('next-btn');
-      if (qIndex === appState.questions.length-1) {
-        nextBtn.className = 'flex-1 py-3 px-3 rounded-xl font-bold text-base text-white bg-emerald-500 hover:bg-emerald-600 transition-all flex items-center justify-center gap-1.5 shadow-md';
-        nextBtn.innerHTML = '查看成績 📊';
+      if (correct) {
+        // ✅ 答對 → 顯示得分，1 秒後出現「查看成績」按鈕，讓使用者自己按
+        hint.innerHTML = `<i class="fa-solid fa-star text-amber-500 mr-1"></i>答對！得 <span class="text-amber-600 font-black">${earned}</span> 分（用了 ${secsUsed} 秒）`;
+        hint.className = 'text-xs font-bold text-emerald-600';
+        // 先隱藏按鈕，1秒後顯示
+        const nextBtn = document.getElementById('next-btn');
+        nextBtn.classList.add('hidden');
+        setTimeout(() => {
+          nextBtn.classList.remove('hidden');
+          nextBtn.className = 'flex-1 py-3 px-3 rounded-xl font-bold text-base text-white bg-emerald-500 hover:bg-emerald-600 transition-all flex items-center justify-center gap-1.5 shadow-md';
+          nextBtn.innerHTML = '查看成績 📊';
+          nextBtn.onclick = () => finishQuiz();
+        }, 1000);
       } else {
-        nextBtn.className = 'flex-1 py-3 px-3 rounded-xl font-bold text-base text-white bg-indigo-500 hover:bg-indigo-600 transition-all flex items-center justify-center gap-1.5 shadow-md';
-        nextBtn.innerHTML = '下一題 <i class="fa-solid fa-chevron-right"></i>';
+        // ❌ 答錯 → 顯示錯誤提示，啟用「下一題」繼續作答
+        hint.innerHTML = `<i class="fa-solid fa-circle-xmark text-rose-500 mr-1"></i>答錯！正確答案是 ${q.correctAns}，繼續加油！`;
+        hint.className = 'text-xs font-bold text-rose-600';
+
+        const nextBtn = document.getElementById('next-btn');
+        nextBtn.classList.remove('hidden');
+        if (qIndex === appState.questions.length-1) {
+          nextBtn.className = 'flex-1 py-3 px-3 rounded-xl font-bold text-base text-white bg-emerald-500 hover:bg-emerald-600 transition-all flex items-center justify-center gap-1.5 shadow-md';
+          nextBtn.innerHTML = '查看成績 📊';
+        } else {
+          nextBtn.className = 'flex-1 py-3 px-3 rounded-xl font-bold text-base text-white bg-indigo-500 hover:bg-indigo-600 transition-all flex items-center justify-center gap-1.5 shadow-md';
+          nextBtn.innerHTML = '再試一題 <i class="fa-solid fa-chevron-right"></i>';
+        }
       }
     }
 
-    // 超時未作答
+    // 超時未作答 → 記0分，繼續答題
     function timeoutQuestion(q) {
       appState.answered = true;
       appState.questionResults.push({
@@ -785,17 +740,18 @@ HTML_CONTENT = """<!DOCTYPE html>
       });
       renderOptions(q, null, true);
       const hint = document.getElementById('q-score-hint');
-      hint.innerHTML = `<i class="fa-solid fa-clock text-slate-400 mr-1"></i>超時！正確答案是 ${q.correctAns}，本題得 0 分`;
+      hint.innerHTML = `<i class="fa-solid fa-clock text-slate-400 mr-1"></i>超時！正確答案是 ${q.correctAns}，繼續下一題`;
       hint.className = 'text-xs font-bold text-slate-500';
 
       const nextBtn = document.getElementById('next-btn');
+      nextBtn.classList.remove('hidden');
       const idx = appState.currentQuestionIndex;
       if (idx === appState.questions.length-1) {
         nextBtn.className = 'flex-1 py-3 px-3 rounded-xl font-bold text-base text-white bg-emerald-500 hover:bg-emerald-600 transition-all flex items-center justify-center gap-1.5 shadow-md';
         nextBtn.innerHTML = '查看成績 📊';
       } else {
         nextBtn.className = 'flex-1 py-3 px-3 rounded-xl font-bold text-base text-white bg-indigo-500 hover:bg-indigo-600 transition-all flex items-center justify-center gap-1.5 shadow-md';
-        nextBtn.innerHTML = '下一題 <i class="fa-solid fa-chevron-right"></i>';
+        nextBtn.innerHTML = '再試一題 <i class="fa-solid fa-chevron-right"></i>';
       }
     }
 
@@ -823,7 +779,6 @@ HTML_CONTENT = """<!DOCTYPE html>
 
       document.getElementById('final-score').textContent = totalScore;
       document.getElementById('res-name').textContent    = appState.studentName;
-      document.getElementById('res-id').textContent      = appState.studentId;
       document.getElementById('res-correct').textContent = `${correctCount} / ${appState.totalQuestionCount}`;
       document.getElementById('res-best').textContent    = `${bestEarned} 分`;
 
