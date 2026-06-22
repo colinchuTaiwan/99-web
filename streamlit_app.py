@@ -187,7 +187,7 @@ HTML_CONTENT = """<!DOCTYPE html>
 
   <!-- 頂部 -->
   <header class="w-full max-w-2xl flex justify-end items-center z-10 mb-4 px-2">
-    <button id="toggle-console-btn" onclick="toggleViewMode()"
+    <button id="toggle-console-btn"
       class="bg-white/80 backdrop-blur-sm border-2 border-indigo-100 text-indigo-700 text-xs md:text-sm font-bold px-4 py-2 rounded-xl shadow-sm hover:bg-indigo-50 transition-all flex items-center gap-1.5">
       <i class="fa-solid fa-chart-line"></i> <span id="mode-btn-text">切換至教師主控台</span>
     </button>
@@ -240,7 +240,7 @@ HTML_CONTENT = """<!DOCTYPE html>
 
 
       <div class="text-center pt-2">
-        <button onclick="startQuiz()"
+        <button
           class="w-full md:w-3/4 py-3.5 rounded-2xl text-xl md:text-2xl font-black tracking-widest text-emerald-800 bg-[#E8F8F5] hover:bg-emerald-200/80 border-b-8 border-emerald-300 hover:border-emerald-400 active:border-b-2 hover:scale-[1.01] active:scale-[0.99] transition-all shadow-md animate-pulse-soft">
           開始挑戰 🎯
         </button>
@@ -292,7 +292,7 @@ HTML_CONTENT = """<!DOCTYPE html>
 
       <!-- 下一題 / 交卷按鈕 -->
       <div class="flex justify-end pt-2 border-t-2 border-slate-100">
-        <button id="next-btn" onclick="handleNext()"
+        <button id="next-btn"
           class="hidden w-full py-3 px-3 rounded-xl font-bold text-base text-white bg-indigo-500 hover:bg-indigo-600 shadow-md transition-all flex items-center justify-center gap-1.5">
           下一題 <i class="fa-solid fa-chevron-right"></i>
         </button>
@@ -347,12 +347,12 @@ HTML_CONTENT = """<!DOCTYPE html>
       </div>
 
       <div class="flex flex-col sm:flex-row gap-2.5 pt-1">
-        <button onclick="exportToPDF()"
-          class="flex-1 py-2.5 px-3 rounded-xl font-bold text-sm text-white bg-red-400 hover:bg-red-500 transition-all flex items-center justify-center gap-1.5 shadow-sm">
+        <button
+          id="btn-export-pdf" class="flex-1 py-2.5 px-3 rounded-xl font-bold text-sm text-white bg-red-400 hover:bg-red-500 transition-all flex items-center justify-center gap-1.5 shadow-sm">
           <i class="fa-regular fa-file-pdf"></i> 下載成績單 (PDF)
         </button>
-        <button onclick="restartQuiz()"
-          class="flex-1 py-2.5 px-3 rounded-xl font-black text-sm text-indigo-700 bg-indigo-100 hover:bg-indigo-200 transition-all flex items-center justify-center gap-1.5 shadow-sm">
+        <button
+          id="btn-restart" class="flex-1 py-2.5 px-3 rounded-xl font-black text-sm text-indigo-700 bg-indigo-100 hover:bg-indigo-200 transition-all flex items-center justify-center gap-1.5 shadow-sm">
           <i class="fa-solid fa-rotate-left"></i> 再測一次 🔄
         </button>
       </div>
@@ -460,7 +460,13 @@ HTML_CONTENT = """<!DOCTYPE html>
     };
 
     // ── 初始化 ────────────────────────────────────────────────────────────────
-    document.addEventListener('DOMContentLoaded', () => {});
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('toggle-console-btn').addEventListener('click', toggleViewMode);
+      document.getElementById('start-btn').addEventListener('click', startQuiz);
+      document.getElementById('next-btn').addEventListener('click', handleNext);
+      document.getElementById('btn-export-pdf').addEventListener('click', exportToPDF);
+      document.getElementById('btn-restart').addEventListener('click', restartQuiz);
+    });
 
 
 
@@ -643,12 +649,15 @@ HTML_CONTENT = """<!DOCTYPE html>
           btnClass += `${baseStyles[i % 4]} hover:scale-[1.01] cursor-pointer`;
         }
 
-        const clickAttr = locked ? '' : `onclick="selectOption(${q.id-1}, ${val})"`;
-        container.insertAdjacentHTML('beforeend', `
-          <button ${clickAttr} class="${btnClass}">
-            <span class="w-9 h-9 rounded-full flex items-center justify-center bg-white border shadow-sm text-sm text-slate-500 shrink-0 font-black">${icon}</span>
-            <span class="tracking-wide">${val}</span>
-          </button>`);
+        const btn = document.createElement('button');
+        btn.className = btnClass;
+        btn.innerHTML = `
+          <span class="w-9 h-9 rounded-full flex items-center justify-center bg-white border shadow-sm text-sm text-slate-500 shrink-0 font-black">${icon}</span>
+          <span class="tracking-wide">${val}</span>`;
+        if (!locked) {
+          btn.addEventListener('click', () => selectOption(q.id - 1, val));
+        }
+        container.appendChild(btn);
       });
     }
 
