@@ -233,14 +233,7 @@ HTML_CONTENT = """<!DOCTYPE html>
             <span class="text-[10px] text-slate-400">專家挑戰</span>
             <div class="w-3.5 h-3.5 rounded-full border border-slate-300 mt-1.5 flex items-center justify-center peer-checked:border-amber-500 peer-checked:bg-amber-500"><div class="w-1.5 h-1.5 rounded-full bg-white"></div></div>
           </label>
-          <label class="flex-1 min-w-[110px] max-w-[130px] flex flex-col items-center p-2.5 bg-white border-2 border-amber-200 rounded-xl cursor-pointer hover:bg-amber-50 transition-all">
-            <input type="radio" name="question-count" value="custom" class="hidden peer" id="count-radio-custom">
-            <span class="text-xs font-black text-slate-600 peer-checked:text-amber-600 mb-1">自訂題數</span>
-            <input type="number" id="custom-question-count" min="1" max="100" value="15"
-              onclick="document.getElementById('count-radio-custom').checked = true;"
-              class="w-16 px-1.5 py-0.5 border-2 border-amber-100 rounded text-center text-xs font-bold focus:outline-none focus:border-amber-400">
-            <div class="w-3.5 h-3.5 rounded-full border border-slate-300 mt-1.5 flex items-center justify-center peer-checked:border-amber-500 peer-checked:bg-amber-500"><div class="w-1.5 h-1.5 rounded-full bg-white"></div></div>
-          </label>
+
         </div>
       </div>
 
@@ -299,8 +292,8 @@ HTML_CONTENT = """<!DOCTYPE html>
 
       <!-- 下一題 / 交卷按鈕 -->
       <div class="flex justify-end pt-2 border-t-2 border-slate-100">
-        <button id="next-btn" onclick="nextQuestion()"
-          class="flex-1 py-3 px-3 rounded-xl font-bold text-base text-white bg-indigo-500 hover:bg-indigo-600 shadow-md transition-all flex items-center justify-center gap-1.5">
+        <button id="next-btn"
+          class="hidden flex-1 py-3 px-3 rounded-xl font-bold text-base text-white bg-indigo-500 hover:bg-indigo-600 shadow-md transition-all flex items-center justify-center gap-1.5">
           下一題 <i class="fa-solid fa-chevron-right"></i>
         </button>
       </div>
@@ -478,13 +471,7 @@ HTML_CONTENT = """<!DOCTYPE html>
       appState.studentId   = '';
 
       const countRadio = document.querySelector('input[name="question-count"]:checked');
-      if (countRadio.value === 'custom') {
-        const v = parseInt(document.getElementById('custom-question-count').value, 10);
-        if (isNaN(v) || v <= 0) { alert('💡 請輸入正確的自訂題數！'); return; }
-        appState.totalQuestionCount = v;
-      } else {
-        appState.totalQuestionCount = parseInt(countRadio.value, 10);
-      }
+      appState.totalQuestionCount = parseInt(countRadio.value, 10);
 
       // 固定全範圍 2~9
       appState.selectedRanges = [2,3,4,5,6,7,8,9];
@@ -592,12 +579,10 @@ HTML_CONTENT = """<!DOCTYPE html>
       // 選項
       renderOptions(q, null, false);
 
-      // 下一題按鈕
+      // 下一題按鈕：每題開始時隱藏，等作答後由各分支動態顯示
       const nextBtn = document.getElementById('next-btn');
-      nextBtn.disabled = false;
-      nextBtn.className = 'flex-1 py-3 px-3 rounded-xl font-bold text-base text-white bg-slate-300 cursor-not-allowed flex items-center justify-center gap-1.5';
-      nextBtn.innerHTML = index === appState.questions.length-1
-        ? '查看成績 📊' : '下一題 <i class="fa-solid fa-chevron-right"></i>';
+      nextBtn.classList.add('hidden');
+      nextBtn.onclick = null;
 
       // 啟動每題計時
       appState.qTimerInterval = setInterval(() => {
@@ -726,9 +711,11 @@ HTML_CONTENT = """<!DOCTYPE html>
         if (qIndex === appState.questions.length-1) {
           nextBtn.className = 'flex-1 py-3 px-3 rounded-xl font-bold text-base text-white bg-emerald-500 hover:bg-emerald-600 transition-all flex items-center justify-center gap-1.5 shadow-md';
           nextBtn.innerHTML = '查看成績 📊';
+          nextBtn.onclick = () => finishQuiz();
         } else {
           nextBtn.className = 'flex-1 py-3 px-3 rounded-xl font-bold text-base text-white bg-indigo-500 hover:bg-indigo-600 transition-all flex items-center justify-center gap-1.5 shadow-md';
           nextBtn.innerHTML = '再試一題 <i class="fa-solid fa-chevron-right"></i>';
+          nextBtn.onclick = () => loadQuestion(qIndex + 1);
         }
       }
     }
@@ -756,22 +743,15 @@ HTML_CONTENT = """<!DOCTYPE html>
       if (idx === appState.questions.length-1) {
         nextBtn.className = 'flex-1 py-3 px-3 rounded-xl font-bold text-base text-white bg-emerald-500 hover:bg-emerald-600 transition-all flex items-center justify-center gap-1.5 shadow-md';
         nextBtn.innerHTML = '查看成績 📊';
+        nextBtn.onclick = () => finishQuiz();
       } else {
         nextBtn.className = 'flex-1 py-3 px-3 rounded-xl font-bold text-base text-white bg-indigo-500 hover:bg-indigo-600 transition-all flex items-center justify-center gap-1.5 shadow-md';
         nextBtn.innerHTML = '再試一題 <i class="fa-solid fa-chevron-right"></i>';
+        nextBtn.onclick = () => loadQuestion(idx + 1);
       }
     }
 
-    // ── 下一題 / 交卷 ─────────────────────────────────────────────────────────
-    function nextQuestion() {
-      if (!appState.answered) return;   // 還沒作答，不能跳
-      const idx = appState.currentQuestionIndex;
-      if (idx < appState.questions.length - 1) {
-        loadQuestion(idx + 1);
-      } else {
-        finishQuiz();
-      }
-    }
+    // 按鈕 onclick 由各分支動態綁定
 
     // ── 結算 ──────────────────────────────────────────────────────────────────
     async function finishQuiz() {
