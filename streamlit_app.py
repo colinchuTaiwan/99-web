@@ -697,17 +697,24 @@ HTML_CONTENT = """<!DOCTYPE html>
       hint.classList.remove('hidden');
 
       if (correct) {
-        // ✅ 答對 → 顯示得分，1 秒後出現「查看成績」按鈕，讓使用者自己按
+        // ✅ 答對 → 顯示得分，1 秒後出現下一題/查看成績按鈕
         hint.innerHTML = `<i class="fa-solid fa-star text-amber-500 mr-1"></i>答對！得 <span class="text-amber-600 font-black">${earned}</span> 分（用了 ${secsUsed} 秒）`;
         hint.className = 'text-xs font-bold text-emerald-600';
-        // 先隱藏按鈕，1秒後顯示
         const nextBtn = document.getElementById('next-btn');
         nextBtn.classList.add('hidden');
         setTimeout(() => {
           nextBtn.classList.remove('hidden');
-          nextBtn.className = 'flex-1 py-3 px-3 rounded-xl font-bold text-base text-white bg-emerald-500 hover:bg-emerald-600 transition-all flex items-center justify-center gap-1.5 shadow-md';
-          nextBtn.innerHTML = '查看成績 📊';
-          nextBtn.onclick = () => finishQuiz();
+          if (qIndex === appState.questions.length - 1) {
+            // 最後一題答對 → 查看成績
+            nextBtn.className = 'flex-1 py-3 px-3 rounded-xl font-bold text-base text-white bg-emerald-500 hover:bg-emerald-600 transition-all flex items-center justify-center gap-1.5 shadow-md';
+            nextBtn.innerHTML = '查看成績 📊';
+            nextBtn.onclick = () => finishQuiz();
+          } else {
+            // 還有下一題 → 下一題
+            nextBtn.className = 'flex-1 py-3 px-3 rounded-xl font-bold text-base text-white bg-indigo-500 hover:bg-indigo-600 transition-all flex items-center justify-center gap-1.5 shadow-md';
+            nextBtn.innerHTML = '下一題 <i class="fa-solid fa-chevron-right"></i>';
+            nextBtn.onclick = () => loadQuestion(qIndex + 1);
+          }
         }, 1000);
       } else {
         // ❌ 答錯 → 顯示錯誤提示，啟用「下一題」繼續作答
