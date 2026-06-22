@@ -123,7 +123,7 @@ import json
 
 firebase_config_json = json.dumps(FIREBASE_CONFIG)
 
-HTML_CONTENT = f"""<!DOCTYPE html>
+HTML_CONTENT = """<!DOCTYPE html>
 <html lang="zh-Hant-TW">
 <head>
   <meta charset="UTF-8">
@@ -142,42 +142,42 @@ HTML_CONTENT = f"""<!DOCTYPE html>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 
   <script>
-    tailwind.config = {{
-      theme: {{
-        extend: {{
-          fontFamily: {{ sans: ['Fredoka', 'Noto Sans TC', 'sans-serif'] }},
-          animation: {{
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Fredoka', 'Noto Sans TC', 'sans-serif'] },
+          animation: {
             'bounce-slow': 'bounce 3s infinite',
             'pulse-soft': 'pulseSoft 2s infinite',
             'fade-in': 'fadeIn 0.4s ease-out forwards',
-          }},
-          keyframes: {{
-            pulseSoft: {{
-              '0%, 100%': {{ transform: 'scale(1)', boxShadow: '0 10px 25px -5px rgba(16,185,129,0.2)' }},
-              '50%': {{ transform: 'scale(1.02)', boxShadow: '0 20px 25px -5px rgba(16,185,129,0.4)' }},
-            }},
-            fadeIn: {{
-              '0%': {{ opacity: '0', transform: 'translateY(15px)' }},
-              '100%': {{ opacity: '1', transform: 'translateY(0)' }},
-            }}
-          }}
-        }}
-      }}
-    }}
+          },
+          keyframes: {
+            pulseSoft: {
+              '0%, 100%': { transform: 'scale(1)', boxShadow: '0 10px 25px -5px rgba(16,185,129,0.2)' },
+              '50%': { transform: 'scale(1.02)', boxShadow: '0 20px 25px -5px rgba(16,185,129,0.4)' },
+            },
+            fadeIn: {
+              '0%': { opacity: '0', transform: 'translateY(15px)' },
+              '100%': { opacity: '1', transform: 'translateY(0)' },
+            }
+          }
+        }
+      }
+    }
   </script>
   <style>
-    body {{
+    body {
       background: linear-gradient(135deg, #F0F8FF 0%, #FFF0F5 100%);
       color: #2C3E50;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
-    }}
-    ::-webkit-scrollbar {{ width: 8px; }}
-    ::-webkit-scrollbar-track {{ background: #F0F8FF; }}
-    ::-webkit-scrollbar-thumb {{ background: #FFD1DC; border-radius: 99px; }}
-    .option-btn {{ transition: all 0.2s cubic-bezier(0.175,0.885,0.32,1.275); }}
-    .option-btn:active {{ transform: scale(0.97); }}
+    }
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #F0F8FF; }
+    ::-webkit-scrollbar-thumb { background: #FFD1DC; border-radius: 99px; }
+    .option-btn { transition: all 0.2s cubic-bezier(0.175,0.885,0.32,1.275); }
+    .option-btn:active { transform: scale(0.97); }
   </style>
 </head>
 <body class="font-sans antialiased p-3 md:p-6 flex flex-col items-center justify-between">
@@ -527,63 +527,63 @@ HTML_CONTENT = f"""<!DOCTYPE html>
     let firebaseDB = null;
     let useFirebase = false;
 
-    try {{
-      if (FIREBASE_CONFIG.apiKey) {{
-        if (!firebase.apps.length) {{
+    try {
+      if (FIREBASE_CONFIG.apiKey) {
+        if (!firebase.apps.length) {
           firebase.initializeApp(FIREBASE_CONFIG);
-        }}
+        }
         firebaseDB = firebase.database();
         useFirebase = true;
         console.log("✅ Firebase 已連線");
-      }} else {{
+      } else {
         console.warn("⚠️ Firebase 設定不完整，降級為 localStorage 模式");
-      }}
-    }} catch(e) {{
+      }
+    } catch(e) {
       console.error("Firebase 初始化失敗:", e);
-    }}
+    }
 
     // ── Firebase / localStorage 雙模儲存層 ────────────────────────────────────
     const DB_KEY = "99_multiplication_records";
     const FIREBASE_PATH = "99quiz_records";
 
-    async function saveRecord(record) {{
-      if (useFirebase) {{
-        try {{
-          await firebaseDB.ref(`${{FIREBASE_PATH}}/${{record.id}}`).set(record);
+    async function saveRecord(record) {
+      if (useFirebase) {
+        try {
+          await firebaseDB.ref(`${FIREBASE_PATH}/${record.id}`).set(record);
           return;
-        }} catch(e) {{ console.error("Firebase 寫入失敗，降級 localStorage:", e); }}
-      }}
+        } catch(e) { console.error("Firebase 寫入失敗，降級 localStorage:", e); }
+      }
       // localStorage 降級
       const records = JSON.parse(localStorage.getItem(DB_KEY) || "[]");
       records.unshift(record);
       localStorage.setItem(DB_KEY, JSON.stringify(records));
-    }}
+    }
 
-    async function loadAllRecords() {{
-      if (useFirebase) {{
-        try {{
+    async function loadAllRecords() {
+      if (useFirebase) {
+        try {
           const snap = await firebaseDB.ref(FIREBASE_PATH).once("value");
           const data = snap.val();
           if (!data) return [];
           // 轉成陣列並按時間倒序
           return Object.values(data).sort((a, b) => (b.ts || 0) - (a.ts || 0));
-        }} catch(e) {{ console.error("Firebase 讀取失敗，降級 localStorage:", e); }}
-      }}
+        } catch(e) { console.error("Firebase 讀取失敗，降級 localStorage:", e); }
+      }
       return JSON.parse(localStorage.getItem(DB_KEY) || "[]");
-    }}
+    }
 
-    async function deleteAllRecords() {{
-      if (useFirebase) {{
-        try {{
+    async function deleteAllRecords() {
+      if (useFirebase) {
+        try {
           await firebaseDB.ref(FIREBASE_PATH).remove();
           return;
-        }} catch(e) {{ console.error("Firebase 刪除失敗:", e); }}
-      }}
+        } catch(e) { console.error("Firebase 刪除失敗:", e); }
+      }
       localStorage.removeItem(DB_KEY);
-    }}
+    }
 
     // ── 系統狀態 ──────────────────────────────────────────────────────────────
-    let appState = {{
+    let appState = {
       viewMode: 'student',
       studentName: '',
       studentId: '',
@@ -591,213 +591,213 @@ HTML_CONTENT = f"""<!DOCTYPE html>
       selectedRanges: [2,3,4,5,6,7,8,9],
       questions: [],
       currentQuestionIndex: 0,
-      userAnswers: {{}},
+      userAnswers: {},
       elapsedSeconds: 0,
       timerInterval: null,
       quizTitle: "99乘法我最強 🚀",
       isInvitedMode: false,
       shareSelectedRanges: [2,3,4,5,6,7,8,9]
-    }};
+    };
 
     // ── 初始化 ────────────────────────────────────────────────────────────────
-    document.addEventListener("DOMContentLoaded", () => {{
+    document.addEventListener("DOMContentLoaded", () => {
       checkUrlParams();
       renderRangeCheckboxes();
       renderShareRangeCheckboxes();
-    }});
+    });
 
-    function checkUrlParams() {{
+    function checkUrlParams() {
       const urlParams = new URLSearchParams(window.location.search);
       const quizParam = urlParams.get('quiz');
-      if (quizParam) {{
-        try {{
+      if (quizParam) {
+        try {
           const decodedData = JSON.parse(decodeURIComponent(escape(atob(quizParam))));
-          if (decodedData) {{
+          if (decodedData) {
             appState.quizTitle = decodedData.title || "受邀版乘法小測驗";
             appState.totalQuestionCount = parseInt(decodedData.count, 10) || 10;
             appState.selectedRanges = decodedData.ranges || [2,3,4,5,6,7,8,9];
             appState.isInvitedMode = true;
             document.getElementById("app-title-display").textContent = appState.quizTitle;
-            document.getElementById("report-quiz-title").textContent = `${{appState.quizTitle}}成績單`;
+            document.getElementById("report-quiz-title").textContent = `${appState.quizTitle}成績單`;
             document.getElementById("invited-badge").classList.remove("hidden");
             document.getElementById("question-count-picker").classList.add("pointer-events-none","opacity-50");
             document.getElementById("range-picker-container").classList.add("hidden");
-          }}
-        }} catch(e) {{ console.error("無法解析分享參數:", e); }}
-      }}
-    }}
+          }
+        } catch(e) { console.error("無法解析分享參數:", e); }
+      }
+    }
 
-    function renderRangeCheckboxes() {{
+    function renderRangeCheckboxes() {
       const container = document.getElementById("range-checkboxes-container");
       container.innerHTML = "";
       const colors = getRangeColors();
-      for (let i = 2; i <= 9; i++) {{
+      for (let i = 2; i <= 9; i++) {
         const color = colors[i-2];
         const isChecked = appState.selectedRanges.includes(i) ? 'checked' : '';
         container.insertAdjacentHTML('beforeend', `
-          <label class="flex items-center justify-between p-2 rounded-xl border-2 cursor-pointer transition-all hover:shadow-sm ${{color.bg}} ${{color.border}}">
-            <span class="font-black text-sm md:text-base ${{color.text}}">${{i}} 🚀</span>
-            <input type="checkbox" name="range-num" value="${{i}}" ${{isChecked}} class="w-4 h-4 accent-indigo-600 rounded cursor-pointer">
+          <label class="flex items-center justify-between p-2 rounded-xl border-2 cursor-pointer transition-all hover:shadow-sm ${color.bg} ${color.border}">
+            <span class="font-black text-sm md:text-base ${color.text}">${i} 🚀</span>
+            <input type="checkbox" name="range-num" value="${i}" ${isChecked} class="w-4 h-4 accent-indigo-600 rounded cursor-pointer">
           </label>`);
-      }}
-    }}
+      }
+    }
 
-    function renderShareRangeCheckboxes() {{
+    function renderShareRangeCheckboxes() {
       const container = document.getElementById("share-range-box");
       container.innerHTML = "";
       const colors = getRangeColors();
-      for (let i = 2; i <= 9; i++) {{
+      for (let i = 2; i <= 9; i++) {
         const color = colors[i-2];
         const isChecked = appState.shareSelectedRanges.includes(i) ? 'checked' : '';
         container.insertAdjacentHTML('beforeend', `
-          <label class="flex items-center justify-between p-1.5 rounded-lg border cursor-pointer transition-all ${{color.bg}} ${{color.border}}">
-            <span class="font-bold text-xs ${{color.text}}">${{i}} 🚀</span>
-            <input type="checkbox" name="share-range-num" value="${{i}}" ${{isChecked}} onchange="updateShareRangePreview()" class="w-3.5 h-3.5 accent-amber-600 rounded cursor-pointer">
+          <label class="flex items-center justify-between p-1.5 rounded-lg border cursor-pointer transition-all ${color.bg} ${color.border}">
+            <span class="font-bold text-xs ${color.text}">${i} 🚀</span>
+            <input type="checkbox" name="share-range-num" value="${i}" ${isChecked} onchange="updateShareRangePreview()" class="w-3.5 h-3.5 accent-amber-600 rounded cursor-pointer">
           </label>`);
-      }}
+      }
       updateShareRangePreview();
-    }}
+    }
 
-    function getRangeColors() {{
+    function getRangeColors() {
       return [
-        {{ bg:'bg-[#FEFDE8]', text:'text-yellow-800', border:'border-yellow-200' }},
-        {{ bg:'bg-[#FFF3E0]', text:'text-orange-800', border:'border-orange-200' }},
-        {{ bg:'bg-[#FFF0F5]', text:'text-pink-800',   border:'border-pink-200' }},
-        {{ bg:'bg-[#F3E5F5]', text:'text-purple-800', border:'border-purple-200' }},
-        {{ bg:'bg-[#E8F8F5]', text:'text-teal-800',   border:'border-teal-200' }},
-        {{ bg:'bg-[#EBF5FB]', text:'text-blue-800',   border:'border-blue-200' }},
-        {{ bg:'bg-[#F4F6F7]', text:'text-slate-800',  border:'border-slate-300' }},
-        {{ bg:'bg-[#FFF8E1]', text:'text-amber-800',  border:'border-amber-200' }},
+        { bg:'bg-[#FEFDE8]', text:'text-yellow-800', border:'border-yellow-200' },
+        { bg:'bg-[#FFF3E0]', text:'text-orange-800', border:'border-orange-200' },
+        { bg:'bg-[#FFF0F5]', text:'text-pink-800',   border:'border-pink-200' },
+        { bg:'bg-[#F3E5F5]', text:'text-purple-800', border:'border-purple-200' },
+        { bg:'bg-[#E8F8F5]', text:'text-teal-800',   border:'border-teal-200' },
+        { bg:'bg-[#EBF5FB]', text:'text-blue-800',   border:'border-blue-200' },
+        { bg:'bg-[#F4F6F7]', text:'text-slate-800',  border:'border-slate-300' },
+        { bg:'bg-[#FFF8E1]', text:'text-amber-800',  border:'border-amber-200' },
       ];
-    }}
+    }
 
-    function selectAllRanges(checked) {{
+    function selectAllRanges(checked) {
       document.querySelectorAll('input[name="range-num"]').forEach(cb => cb.checked = checked);
-    }}
+    }
 
-    function toggleShareRangeModal() {{
+    function toggleShareRangeModal() {
       document.getElementById("share-range-box").classList.toggle("hidden");
-    }}
+    }
 
-    function updateShareRangePreview() {{
+    function updateShareRangePreview() {
       const checkedArr = Array.from(document.querySelectorAll('input[name="share-range-num"]:checked')).map(cb => cb.value);
       appState.shareSelectedRanges = checkedArr.map(Number);
-      document.getElementById("share-range-preview").textContent = checkedArr.length === 0 ? "未選取" : `已選 ${{checkedArr.join(',')}} 範圍`;
-    }}
+      document.getElementById("share-range-preview").textContent = checkedArr.length === 0 ? "未選取" : `已選 ${checkedArr.join(',')} 範圍`;
+    }
 
-    function toggleShareCustomCountInput() {{
+    function toggleShareCustomCountInput() {
       const val = document.getElementById("share-quiz-count").value;
       document.getElementById("share-quiz-custom-count").classList.toggle("hidden", val !== 'custom');
-    }}
+    }
 
     // ── 開始測驗 ──────────────────────────────────────────────────────────────
-    function startQuiz() {{
+    function startQuiz() {
       const nameInput = document.getElementById("student-name").value.trim();
       const idInput   = document.getElementById("student-id").value.trim();
-      if (!nameInput || !idInput) {{ alert("💡 小朋友，請記得填寫「姓名」與「學號/座號」！"); return; }}
+      if (!nameInput || !idInput) { alert("💡 小朋友，請記得填寫「姓名」與「學號/座號」！"); return; }
 
       appState.studentName = nameInput;
       appState.studentId   = idInput;
-      appState.userAnswers = {{}};
+      appState.userAnswers = {};
       appState.currentQuestionIndex = 0;
       appState.elapsedSeconds = 0;
 
-      if (!appState.isInvitedMode) {{
+      if (!appState.isInvitedMode) {
         const countRadio = document.querySelector('input[name="question-count"]:checked');
-        if (countRadio.value === 'custom') {{
+        if (countRadio.value === 'custom') {
           const customVal = parseInt(document.getElementById("custom-question-count").value, 10);
-          if (isNaN(customVal) || customVal <= 0) {{ alert("💡 請輸入正確的自訂題數！"); return; }}
+          if (isNaN(customVal) || customVal <= 0) { alert("💡 請輸入正確的自訂題數！"); return; }
           appState.totalQuestionCount = customVal;
-        }} else {{
+        } else {
           appState.totalQuestionCount = parseInt(countRadio.value, 10);
-        }}
+        }
         const selectedCbs = document.querySelectorAll('input[name="range-num"]:checked');
-        if (selectedCbs.length === 0) {{ alert("💡 請至少勾選一個乘數範圍！"); return; }}
+        if (selectedCbs.length === 0) { alert("💡 請至少勾選一個乘數範圍！"); return; }
         appState.selectedRanges = Array.from(selectedCbs).map(cb => parseInt(cb.value, 10));
-      }}
+      }
 
       generateQuizQuestions();
       document.getElementById("home-view").classList.add("hidden");
       document.getElementById("quiz-view").classList.remove("hidden");
       startTimer();
       loadQuestion(0);
-    }}
+    }
 
-    function generateQuizQuestions() {{
+    function generateQuizQuestions() {
       let pool = [];
-      appState.selectedRanges.forEach(a => {{
-        for (let b = 2; b <= 9; b++) pool.push({{ a, b }});
-      }});
+      appState.selectedRanges.forEach(a => {
+        for (let b = 2; b <= 9; b++) pool.push({ a, b });
+      });
       shuffleArray(pool);
       let generated = [];
-      while (generated.length < appState.totalQuestionCount) {{
-        const copyPool = pool.map(item => ({{ ...item }}));
+      while (generated.length < appState.totalQuestionCount) {
+        const copyPool = pool.map(item => ({ ...item }));
         shuffleArray(copyPool);
         generated = generated.concat(copyPool);
-      }}
-      appState.questions = generated.slice(0, appState.totalQuestionCount).map((q, idx) => ({{
+      }
+      appState.questions = generated.slice(0, appState.totalQuestionCount).map((q, idx) => ({
         id: idx + 1,
         a: q.a,
         b: q.b,
         correctAns: q.a * q.b,
         options: generateConfusingOptions(q.a, q.b),
         mnemonic: getChineseMnemonic(q.a, q.b)
-      }}));
-    }}
+      }));
+    }
 
-    function generateConfusingOptions(a, b) {{
+    function generateConfusingOptions(a, b) {
       const correctAns = a * b;
       const candidates = new Set();
-      for (let offset of [-1,1,-2,2,-3,3]) {{ const n = correctAns + offset; if (n > 0 && n <= 100) candidates.add(n); }}
-      if (correctAns > 10 && correctAns % 10 !== 0) {{
+      for (let offset of [-1,1,-2,2,-3,3]) { const n = correctAns + offset; if (n > 0 && n <= 100) candidates.add(n); }
+      if (correctAns > 10 && correctAns % 10 !== 0) {
         const swapped = (correctAns % 10) * 10 + Math.floor(correctAns / 10);
         if (swapped !== correctAns && swapped <= 100) candidates.add(swapped);
-      }}
-      [(a-1)*b,(a+1)*b,a*(b-1),a*(b+1),(a-1)*(b-1),(a+1)*(b+1)].forEach(p => {{
+      }
+      [(a-1)*b,(a+1)*b,a*(b-1),a*(b+1),(a-1)*(b-1),(a+1)*(b+1)].forEach(p => {
         if (p > 0 && p !== correctAns && p <= 100) candidates.add(p);
-      }});
+      });
       const candList = shuffleArray(Array.from(candidates));
       const wrongAnswers = [];
-      for (let i = 0; i < candList.length && wrongAnswers.length < 3; i++) {{
+      for (let i = 0; i < candList.length && wrongAnswers.length < 3; i++) {
         if (candList[i] !== correctAns) wrongAnswers.push(candList[i]);
-      }}
-      while (wrongAnswers.length < 3) {{
+      }
+      while (wrongAnswers.length < 3) {
         const r = Math.floor(Math.random() * 80) + 2;
         if (r !== correctAns && !wrongAnswers.includes(r)) wrongAnswers.push(r);
-      }}
+      }
       return shuffleArray([correctAns, ...wrongAnswers]);
-    }}
+    }
 
-    function getChineseMnemonic(a, b) {{
+    function getChineseMnemonic(a, b) {
       const x = Math.min(a, b), y = Math.max(a, b), p = x * y;
       const ch = ['','一','二','三','四','五','六','七','八','九','十'];
-      if (p < 10) return `${{ch[x]}}${{ch[y]}}得${{ch[p]}}`;
+      if (p < 10) return `${ch[x]}${ch[y]}得${ch[p]}`;
       const tens = Math.floor(p / 10), ones = p % 10;
       const pCh = tens === 1 ? '十' + (ones > 0 ? ch[ones] : '') : ch[tens] + '十' + (ones > 0 ? ch[ones] : '');
       if (x === 2 && y === 5) return '二五一十';
-      return `${{ch[x]}}${{ch[y]}}${{pCh}}`;
-    }}
+      return `${ch[x]}${ch[y]}${pCh}`;
+    }
 
-    function shuffleArray(array) {{
-      for (let i = array.length - 1; i > 0; i--) {{
+    function shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [array[i], array[j]] = [array[j], array[i]];
-      }}
+      }
       return array;
-    }}
+    }
 
     // ── 測驗頁控制 ────────────────────────────────────────────────────────────
-    function loadQuestion(index) {{
+    function loadQuestion(index) {
       if (index < 0 || index >= appState.questions.length) return;
       appState.currentQuestionIndex = index;
       const q = appState.questions[index];
       const percent = ((index + 1) / appState.totalQuestionCount) * 100;
-      document.getElementById("progress-text").textContent = `第 ${{index+1}} / ${{appState.totalQuestionCount}} 題`;
-      document.getElementById("progress-bar").style.width = `${{percent}}%`;
+      document.getElementById("progress-text").textContent = `第 ${index+1} / ${appState.totalQuestionCount} 題`;
+      document.getElementById("progress-bar").style.width = `${percent}%`;
       document.getElementById("quiz-question").innerHTML = `
-        <span class="text-slate-800">${{q.a}}</span>
+        <span class="text-slate-800">${q.a}</span>
         <span class="text-pink-500 mx-3">×</span>
-        <span class="text-slate-800">${{q.b}}</span>
+        <span class="text-slate-800">${q.b}</span>
         <span class="text-indigo-500 mx-3">=</span>
         <span class="text-slate-400">?</span>`;
 
@@ -810,98 +810,98 @@ HTML_CONTENT = f"""<!DOCTYPE html>
         'bg-purple-50/70 hover:bg-purple-100/80 border-purple-200 text-purple-900',
         'bg-pink-50/70 hover:bg-pink-100/80 border-pink-200 text-pink-900'
       ];
-      q.options.forEach((val, i) => {{
+      q.options.forEach((val, i) => {
         const isSelected = appState.userAnswers[index] === val;
         const activeClass = isSelected
           ? 'ring-4 ring-indigo-400 border-indigo-500 bg-gradient-to-r from-indigo-50 to-indigo-100/40 scale-[1.01]'
           : 'border-slate-200';
         container.insertAdjacentHTML('beforeend', `
-          <button onclick="selectOption(${{index}}, ${{val}})"
-            class="option-btn w-full p-5 rounded-2xl border-2 text-2xl font-black text-left flex items-center gap-4 transition-all shadow-sm ${{styles[i % styles.length]}} ${{activeClass}}">
+          <button onclick="selectOption(${index}, ${val})"
+            class="option-btn w-full p-5 rounded-2xl border-2 text-2xl font-black text-left flex items-center gap-4 transition-all shadow-sm ${styles[i % styles.length]} ${activeClass}">
             <span class="w-9 h-9 rounded-full flex items-center justify-center bg-white border shadow-sm text-sm text-slate-500 shrink-0 font-black">
-              ${{isSelected ? '<i class="fa-solid fa-check text-indigo-600"></i>' : letters[i]}}
+              ${isSelected ? '<i class="fa-solid fa-check text-indigo-600"></i>' : letters[i]}
             </span>
-            <span class="tracking-wide">${{val}}</span>
+            <span class="tracking-wide">${val}</span>
           </button>`);
-      }});
+      });
 
       document.getElementById("prev-btn").disabled = index === 0;
       const nextBtn = document.getElementById("next-btn");
-      if (index === appState.questions.length - 1) {{
+      if (index === appState.questions.length - 1) {
         nextBtn.innerHTML = `繳交試卷 📝`;
         nextBtn.className = "flex-1 py-3 px-3 rounded-xl font-bold text-base text-white bg-emerald-500 hover:bg-emerald-600 transition-all flex items-center justify-center gap-1.5 shadow-md";
-      }} else {{
+      } else {
         nextBtn.innerHTML = `下一題 <i class="fa-solid fa-chevron-right"></i>`;
         nextBtn.className = "flex-1 py-3 px-3 rounded-xl font-bold text-base text-white bg-indigo-500 hover:bg-indigo-600 transition-all flex items-center justify-center gap-1.5 shadow-md";
-      }}
-    }}
+      }
+    }
 
-    function selectOption(qIndex, val) {{ appState.userAnswers[qIndex] = val; loadQuestion(qIndex); }}
-    function prevQuestion() {{ if (appState.currentQuestionIndex > 0) loadQuestion(appState.currentQuestionIndex - 1); }}
-    function nextQuestion() {{
+    function selectOption(qIndex, val) { appState.userAnswers[qIndex] = val; loadQuestion(qIndex); }
+    function prevQuestion() { if (appState.currentQuestionIndex > 0) loadQuestion(appState.currentQuestionIndex - 1); }
+    function nextQuestion() {
       if (appState.currentQuestionIndex < appState.questions.length - 1) loadQuestion(appState.currentQuestionIndex + 1);
       else submitQuiz();
-    }}
+    }
 
     // ── 繳交 ─────────────────────────────────────────────────────────────────
-    function submitQuiz() {{
+    function submitQuiz() {
       let emptyCount = 0;
-      for (let i = 0; i < appState.totalQuestionCount; i++) {{
+      for (let i = 0; i < appState.totalQuestionCount; i++) {
         if (appState.userAnswers[i] === undefined) emptyCount++;
-      }}
+      }
       const confirmMsg = emptyCount > 0
-        ? `💡 還有 ${{emptyCount}} 題沒有回答！確定要交卷嗎？`
+        ? `💡 還有 ${emptyCount} 題沒有回答！確定要交卷嗎？`
         : "💡 所有題目都回答完畢了！確定交卷嗎？";
       if (!confirm(confirmMsg)) return;
       clearInterval(appState.timerInterval);
       document.getElementById("quiz-view").classList.add("hidden");
       document.getElementById("result-view").classList.remove("hidden");
       saveAndRenderResults();
-    }}
+    }
 
-    async function saveAndRenderResults() {{
+    async function saveAndRenderResults() {
       let correctCount = 0;
       const parsedAnswers = [];
-      appState.questions.forEach((q, idx) => {{
+      appState.questions.forEach((q, idx) => {
         const uAns = appState.userAnswers[idx];
         const isCorrect = uAns === q.correctAns;
         if (isCorrect) correctCount++;
-        parsedAnswers.push({{ equation:`${{q.a}} × ${{q.b}}`, correct:isCorrect, userAns:uAns !== undefined ? uAns : '未答', correctAns:q.correctAns, mnemonic:q.mnemonic }});
-      }});
+        parsedAnswers.push({ equation:`${q.a} × ${q.b}`, correct:isCorrect, userAns:uAns !== undefined ? uAns : '未答', correctAns:q.correctAns, mnemonic:q.mnemonic });
+      });
 
       const finalScore = Math.round((correctCount / appState.totalQuestionCount) * 100);
       document.getElementById("final-score").textContent = finalScore;
       document.getElementById("res-name").textContent = appState.studentName;
       document.getElementById("res-id").textContent = appState.studentId;
       document.getElementById("res-time").textContent = formatTime(appState.elapsedSeconds);
-      document.getElementById("res-correct-rate").textContent = `${{correctCount}} / ${{appState.totalQuestionCount}} 題`;
+      document.getElementById("res-correct-rate").textContent = `${correctCount} / ${appState.totalQuestionCount} 題`;
 
       const commentEl = document.getElementById("score-comment");
-      if (finalScore === 100) {{ commentEl.textContent = "完美全對！你是乘法大師！🏆"; commentEl.className = "text-lg md:text-xl font-black text-center text-emerald-600 pt-1"; triggerCelebration(true); }}
-      else if (finalScore >= 80) {{ commentEl.textContent = "超級棒！實力不凡喔！🌟"; commentEl.className = "text-lg md:text-xl font-black text-center text-indigo-600 pt-1"; triggerCelebration(false); }}
-      else if (finalScore >= 60) {{ commentEl.textContent = "及格了，再接再厲！✨"; commentEl.className = "text-lg md:text-xl font-black text-center text-amber-600 pt-1"; }}
-      else {{ commentEl.textContent = "加油加油！多練習就會更厲害！💪"; commentEl.className = "text-lg md:text-xl font-black text-center text-rose-500 pt-1"; }}
+      if (finalScore === 100) { commentEl.textContent = "完美全對！你是乘法大師！🏆"; commentEl.className = "text-lg md:text-xl font-black text-center text-emerald-600 pt-1"; triggerCelebration(true); }
+      else if (finalScore >= 80) { commentEl.textContent = "超級棒！實力不凡喔！🌟"; commentEl.className = "text-lg md:text-xl font-black text-center text-indigo-600 pt-1"; triggerCelebration(false); }
+      else if (finalScore >= 60) { commentEl.textContent = "及格了，再接再厲！✨"; commentEl.className = "text-lg md:text-xl font-black text-center text-amber-600 pt-1"; }
+      else { commentEl.textContent = "加油加油！多練習就會更厲害！💪"; commentEl.className = "text-lg md:text-xl font-black text-center text-rose-500 pt-1"; }
 
       const reviewContainer = document.getElementById("review-list");
       reviewContainer.innerHTML = "";
-      parsedAnswers.forEach((ans, idx) => {{
+      parsedAnswers.forEach((ans, idx) => {
         const stateColor = ans.correct ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-rose-50 border-rose-200 text-rose-800';
         const stateBadge = ans.correct
           ? '<span class="bg-emerald-100 text-emerald-800 text-[10px] px-2 py-0.5 rounded-full font-black"><i class="fa-solid fa-circle-check mr-1"></i>答對</span>'
           : '<span class="bg-rose-100 text-rose-800 text-[10px] px-2 py-0.5 rounded-full font-black"><i class="fa-solid fa-circle-xmark mr-1"></i>答錯</span>';
         reviewContainer.insertAdjacentHTML('beforeend', `
-          <div class="p-3.5 rounded-xl border-2 ${{stateColor}} space-y-1">
-            <div class="flex justify-between items-center text-xs"><span class="font-bold text-slate-400">第 ${{idx+1}} 題</span>${{stateBadge}}</div>
-            <div class="text-xl font-black tracking-wide">${{ans.equation}} = ${{ans.correctAns}}</div>
-            <div class="text-xs font-bold flex gap-4"><span>你答：${{ans.userAns}}</span><span>正確：${{ans.correctAns}}</span></div>
+          <div class="p-3.5 rounded-xl border-2 ${stateColor} space-y-1">
+            <div class="flex justify-between items-center text-xs"><span class="font-bold text-slate-400">第 ${idx+1} 題</span>${stateBadge}</div>
+            <div class="text-xl font-black tracking-wide">${ans.equation} = ${ans.correctAns}</div>
+            <div class="text-xs font-bold flex gap-4"><span>你答：${ans.userAns}</span><span>正確：${ans.correctAns}</span></div>
             <div class="bg-white/75 p-2 rounded-lg text-[10px] font-bold text-slate-500 border border-dashed flex items-start gap-1">
-              <span>💡 口訣：</span><span>「${{ans.mnemonic}}，所以答案是 ${{ans.correctAns}} 喔！」</span>
+              <span>💡 口訣：</span><span>「${ans.mnemonic}，所以答案是 ${ans.correctAns} 喔！」</span>
             </div>
           </div>`);
-      }});
+      });
 
       // 儲存到 Firebase（或 localStorage）
-      const record = {{
+      const record = {
         id: 'rec_' + Date.now(),
         ts: Date.now(),
         studentId: appState.studentId,
@@ -911,265 +911,265 @@ HTML_CONTENT = f"""<!DOCTYPE html>
         ranges: appState.selectedRanges,
         date: new Date().toLocaleDateString('zh-TW'),
         answers: parsedAnswers
-      }};
+      };
 
       await saveRecord(record);
 
       const b64 = btoa(unescape(encodeURIComponent(JSON.stringify(record))));
-      document.getElementById("submission-code-box").value = `99QUIZ-${{b64}}`;
+      document.getElementById("submission-code-box").value = `99QUIZ-${b64}`;
 
       refreshConsoleData();
-    }}
+    }
 
     // ── 教師主控台 ────────────────────────────────────────────────────────────
-    async function refreshConsoleData() {{
+    async function refreshConsoleData() {
       const records = await loadAllRecords();
       const total = records.length;
       document.getElementById("stat-total-count").textContent = total;
 
-      if (total === 0) {{
+      if (total === 0) {
         document.getElementById("stat-avg-score").innerHTML = '0 <span class="text-xs">分</span>';
         document.getElementById("stat-avg-time").innerHTML = '0 <span class="text-xs">秒</span>';
         document.getElementById("stat-pass-rate").textContent = "0%";
         document.getElementById("leaderboard-tbody").innerHTML = `<tr><td colspan="6" class="text-center p-6 text-slate-400 font-bold">目前無任何測驗數據</td></tr>`;
         document.getElementById("accuracy-analysis-list").innerHTML = `<div class="col-span-2 text-center p-6 text-slate-400 font-bold">暫無分析數據</div>`;
         return;
-      }}
+      }
 
       const sumScore = records.reduce((s,r) => s + r.score, 0);
       const sumTime  = records.reduce((s,r) => s + r.elapsedSeconds, 0);
       const passCount = records.filter(r => r.score >= 60).length;
-      document.getElementById("stat-avg-score").innerHTML = `${{Math.round(sumScore/total)}} <span class="text-xs">分</span>`;
-      document.getElementById("stat-avg-time").innerHTML  = `${{Math.round(sumTime/total)}} <span class="text-xs">秒</span>`;
-      document.getElementById("stat-pass-rate").textContent = `${{Math.round((passCount/total)*100)}}%`;
+      document.getElementById("stat-avg-score").innerHTML = `${Math.round(sumScore/total)} <span class="text-xs">分</span>`;
+      document.getElementById("stat-avg-time").innerHTML  = `${Math.round(sumTime/total)} <span class="text-xs">秒</span>`;
+      document.getElementById("stat-pass-rate").textContent = `${Math.round((passCount/total)*100)}%`;
 
       const rankedRecords = [...records].sort((a,b) => b.score - a.score || a.elapsedSeconds - b.elapsedSeconds);
       const tbody = document.getElementById("leaderboard-tbody");
       tbody.innerHTML = "";
-      rankedRecords.forEach((r, idx) => {{
-        const medal = idx===0?'🥇':idx===1?'🥈':idx===2?'🥉':`${{idx+1}}`;
+      rankedRecords.forEach((r, idx) => {
+        const medal = idx===0?'🥇':idx===1?'🥈':idx===2?'🥉':`${idx+1}`;
         tbody.insertAdjacentHTML('beforeend', `
           <tr class="hover:bg-slate-50 transition-colors font-bold text-slate-600">
-            <td class="p-3 text-sm">${{medal}}</td>
-            <td class="p-3">${{r.studentId}}</td>
-            <td class="p-3 text-slate-800">${{r.studentName}}</td>
-            <td class="p-3 text-center text-amber-600 font-black">${{r.score}}</td>
-            <td class="p-3 text-center text-slate-500">${{formatTime(r.elapsedSeconds)}}</td>
-            <td class="p-3 text-center text-xs text-slate-400">${{r.date}}</td>
+            <td class="p-3 text-sm">${medal}</td>
+            <td class="p-3">${r.studentId}</td>
+            <td class="p-3 text-slate-800">${r.studentName}</td>
+            <td class="p-3 text-center text-amber-600 font-black">${r.score}</td>
+            <td class="p-3 text-center text-slate-500">${formatTime(r.elapsedSeconds)}</td>
+            <td class="p-3 text-center text-xs text-slate-400">${r.date}</td>
           </tr>`);
-      }});
+      });
 
-      const eqStats = {{}};
-      records.forEach(r => {{
-        r.answers.forEach(ans => {{
-          if (!eqStats[ans.equation]) eqStats[ans.equation] = {{ correct:0, total:0 }};
+      const eqStats = {};
+      records.forEach(r => {
+        r.answers.forEach(ans => {
+          if (!eqStats[ans.equation]) eqStats[ans.equation] = { correct:0, total:0 };
           eqStats[ans.equation].total++;
           if (ans.correct) eqStats[ans.equation].correct++;
-        }});
-      }});
+        });
+      });
 
       const analysisContainer = document.getElementById("accuracy-analysis-list");
       analysisContainer.innerHTML = "";
-      Object.keys(eqStats).map(eq => {{
+      Object.keys(eqStats).map(eq => {
         const rate = Math.round((eqStats[eq].correct / eqStats[eq].total) * 100);
-        return {{ eq, rate, ...eqStats[eq] }};
-      }}).sort((a,b) => a.rate - b.rate).forEach(item => {{
+        return { eq, rate, ...eqStats[eq] };
+      }).sort((a,b) => a.rate - b.rate).forEach(item => {
         const barColor = item.rate >= 80 ? 'bg-emerald-500' : item.rate >= 60 ? 'bg-amber-500' : 'bg-rose-500';
         const bgTrack  = item.rate >= 80 ? 'bg-emerald-50'  : item.rate >= 60 ? 'bg-amber-50'  : 'bg-rose-50';
         analysisContainer.insertAdjacentHTML('beforeend', `
           <div class="p-3 rounded-xl border border-slate-100 shadow-sm flex flex-col justify-between space-y-1.5 bg-white">
             <div class="flex justify-between items-center text-xs font-black">
-              <span class="text-base text-slate-800">${{item.eq}}</span>
-              <span class="text-slate-500">答對率：<span class="${{item.rate < 60 ? 'text-rose-600':'text-emerald-600'}} text-sm">${{item.rate}}%</span> (${{item.correct}}/${{item.total}}次)</span>
+              <span class="text-base text-slate-800">${item.eq}</span>
+              <span class="text-slate-500">答對率：<span class="${item.rate < 60 ? 'text-rose-600':'text-emerald-600'} text-sm">${item.rate}%</span> (${item.correct}/${item.total}次)</span>
             </div>
-            <div class="w-full ${{bgTrack}} h-2 rounded-full overflow-hidden">
-              <div class="${{barColor}} h-full" style="width:${{item.rate}}%"></div>
+            <div class="w-full ${bgTrack} h-2 rounded-full overflow-hidden">
+              <div class="${barColor} h-full" style="width:${item.rate}%"></div>
             </div>
           </div>`);
-      }});
+      });
 
       const studentSelector = document.getElementById("student-selector");
       const currentSelected = studentSelector.value;
       studentSelector.innerHTML = '<option value="">-- 請選擇學生 --</option>';
-      const studentSet = {{}};
-      records.forEach(r => {{ studentSet[`${{r.studentId}}_${{r.studentName}}`] = {{ id:r.studentId, name:r.studentName }}; }});
-      Object.keys(studentSet).forEach(key => {{
+      const studentSet = {};
+      records.forEach(r => { studentSet[`${r.studentId}_${r.studentName}`] = { id:r.studentId, name:r.studentName }; });
+      Object.keys(studentSet).forEach(key => {
         const item = studentSet[key];
-        studentSelector.insertAdjacentHTML('beforeend', `<option value="${{key}}" ${{currentSelected===key?'selected':''}}> 座號 ${{item.id}} - ${{item.name}}</option>`);
-      }});
+        studentSelector.insertAdjacentHTML('beforeend', `<option value="${key}" ${currentSelected===key?'selected':''}> 座號 ${item.id} - ${item.name}</option>`);
+      });
       loadStudentHistory();
-    }}
+    }
 
-    async function loadStudentHistory() {{
+    async function loadStudentHistory() {
       const val = document.getElementById("student-selector").value;
       const container = document.getElementById("student-history-timeline");
       container.innerHTML = "";
-      if (!val) {{ container.innerHTML = `<div class="text-center py-4 text-slate-400 font-bold">請先選擇一位學生</div>`; return; }}
+      if (!val) { container.innerHTML = `<div class="text-center py-4 text-slate-400 font-bold">請先選擇一位學生</div>`; return; }
 
       const [id, name] = val.split('_');
       const records = await loadAllRecords();
       const personal = records.filter(r => r.studentId === id && r.studentName === name);
 
-      personal.forEach((r, idx) => {{
-        const wrongAnswers = r.answers.filter(a => !a.correct).map(a => `${{a.equation}}=${{a.correctAns}}(你寫${{a.userAns}})`);
+      personal.forEach((r, idx) => {
+        const wrongAnswers = r.answers.filter(a => !a.correct).map(a => `${a.equation}=${a.correctAns}(你寫${a.userAns})`);
         const wrongTxt = wrongAnswers.length > 0
-          ? `<div class="text-rose-500 mt-1 font-bold">❌ 答錯：${{wrongAnswers.join('、')}}</div>`
+          ? `<div class="text-rose-500 mt-1 font-bold">❌ 答錯：${wrongAnswers.join('、')}</div>`
           : `<div class="text-emerald-600 mt-1 font-bold">🎉 完美全對！</div>`;
         container.insertAdjacentHTML('beforeend', `
           <div class="p-2.5 bg-white rounded-lg border border-slate-200 hover:shadow-sm transition-all">
             <div class="flex justify-between items-center text-[10px] text-slate-400 font-bold">
-              <span>第 ${{personal.length - idx}} 次挑戰 - ${{r.date}}</span>
-              <span class="text-amber-600 text-xs font-black">得分：${{r.score}} 分</span>
+              <span>第 ${personal.length - idx} 次挑戰 - ${r.date}</span>
+              <span class="text-amber-600 text-xs font-black">得分：${r.score} 分</span>
             </div>
-            <div class="mt-1 font-bold text-slate-600">作答時間：${{formatTime(r.elapsedSeconds)}}</div>
-            ${{wrongTxt}}
+            <div class="mt-1 font-bold text-slate-600">作答時間：${formatTime(r.elapsedSeconds)}</div>
+            ${wrongTxt}
           </div>`);
-      }});
-    }}
+      });
+    }
 
     // ── 分享連結 ──────────────────────────────────────────────────────────────
-    function generateCustomShareLink() {{
+    function generateCustomShareLink() {
       const customTitle = document.getElementById("share-quiz-title").value.trim() || "九九乘法大挑戰 🚀";
       let customCount = document.getElementById("share-quiz-count").value;
-      if (customCount === 'custom') {{
+      if (customCount === 'custom') {
         customCount = parseInt(document.getElementById("share-quiz-custom-count").value, 10);
-        if (isNaN(customCount) || customCount <= 0) {{ alert("💡 請輸入合法的自訂分享題數！"); return; }}
-      }} else {{ customCount = parseInt(customCount, 10); }}
-      if (appState.shareSelectedRanges.length === 0) {{ alert("💡 請至少勾選一個乘數範圍！"); return; }}
-      const shareObj = {{ title:customTitle, count:customCount, ranges:appState.shareSelectedRanges }};
-      try {{
+        if (isNaN(customCount) || customCount <= 0) { alert("💡 請輸入合法的自訂分享題數！"); return; }
+      } else { customCount = parseInt(customCount, 10); }
+      if (appState.shareSelectedRanges.length === 0) { alert("💡 請至少勾選一個乘數範圍！"); return; }
+      const shareObj = { title:customTitle, count:customCount, ranges:appState.shareSelectedRanges };
+      try {
         const b64 = btoa(unescape(encodeURIComponent(JSON.stringify(shareObj))));
-        const shareUrl = `${{window.location.origin}}${{window.location.pathname}}?quiz=${{b64}}`;
-        navigator.clipboard.writeText(shareUrl).then(() => {{
-          alert(`🎉 分享連結已複製！\n【${{shareObj.title}}（共${{shareObj.count}}題）】`);
-        }}).catch(() => alert(`連結：${{shareUrl}}\n（請手動複製）`));
-      }} catch(e) {{ console.error("產生連結出錯:", e); }}
-    }}
+        const shareUrl = `${window.location.origin}${window.location.pathname}?quiz=${b64}`;
+        navigator.clipboard.writeText(shareUrl).then(() => {
+          alert(`🎉 分享連結已複製！\n【${shareObj.title}（共${shareObj.count}題）】`);
+        }).catch(() => alert(`連結：${shareUrl}\n（請手動複製）`));
+      } catch(e) { console.error("產生連結出錯:", e); }
+    }
 
     // ── 匯入代碼 ──────────────────────────────────────────────────────────────
-    async function importStudentCodes() {{
+    async function importStudentCodes() {
       const textarea = document.getElementById("import-codes-input");
       const lines = textarea.value.split('\\n');
       let successCount = 0, duplicateCount = 0, failCount = 0;
       const records = await loadAllRecords();
 
-      for (const line of lines) {{
+      for (const line of lines) {
         const cleanLine = line.trim();
         if (!cleanLine) continue;
-        if (cleanLine.startsWith("99QUIZ-")) {{
-          try {{
+        if (cleanLine.startsWith("99QUIZ-")) {
+          try {
             const record = JSON.parse(decodeURIComponent(escape(atob(cleanLine.replace("99QUIZ-","")))));
-            if (record && record.id) {{
+            if (record && record.id) {
               const exist = records.some(r => r.id === record.id || (r.studentId===record.studentId && r.elapsedSeconds===record.elapsedSeconds && r.score===record.score && r.date===record.date));
-              if (exist) {{ duplicateCount++; }}
-              else {{
+              if (exist) { duplicateCount++; }
+              else {
                 await saveRecord(record);
                 records.unshift(record);
                 successCount++;
-              }}
-            }} else failCount++;
-          }} catch(e) {{ failCount++; }}
-        }} else failCount++;
-      }}
+              }
+            } else failCount++;
+          } catch(e) { failCount++; }
+        } else failCount++;
+      }
 
       refreshConsoleData();
       textarea.value = "";
-      alert(`📊 匯入結果：\n✅ 成功：${{successCount}} 筆\n⚠️ 重複：${{duplicateCount}} 筆\n❌ 失敗：${{failCount}} 筆`);
-    }}
+      alert(`📊 匯入結果：\n✅ 成功：${successCount} 筆\n⚠️ 重複：${duplicateCount} 筆\n❌ 失敗：${failCount} 筆`);
+    }
 
     // ── 清空紀錄 ──────────────────────────────────────────────────────────────
-    async function clearAllRecords() {{
-      if (confirm("⚠️ 確定要清空所有班級紀錄嗎？此動作無法復原！")) {{
+    async function clearAllRecords() {
+      if (confirm("⚠️ 確定要清空所有班級紀錄嗎？此動作無法復原！")) {
         await deleteAllRecords();
         refreshConsoleData();
         alert("班級紀錄已清空！");
-      }}
-    }}
+      }
+    }
 
     // ── UI 切換 ───────────────────────────────────────────────────────────────
-    function switchConsoleTab(tabId) {{
-      ['tab-leaderboard','tab-analysis','tab-history','tab-sync'].forEach(tid => {{
+    function switchConsoleTab(tabId) {
+      ['tab-leaderboard','tab-analysis','tab-history','tab-sync'].forEach(tid => {
         document.getElementById(tid).classList.add("hidden");
-        document.getElementById(`btn-${{tid}}`).className = "flex-1 py-2 font-black border-b-2 border-transparent text-slate-400 hover:text-slate-600 transition-all";
-      }});
+        document.getElementById(`btn-${tid}`).className = "flex-1 py-2 font-black border-b-2 border-transparent text-slate-400 hover:text-slate-600 transition-all";
+      });
       document.getElementById(tabId).classList.remove("hidden");
-      document.getElementById(`btn-${{tabId}}`).className = "flex-1 py-2 font-black border-b-2 border-indigo-600 text-indigo-700 transition-all";
-    }}
+      document.getElementById(`btn-${tabId}`).className = "flex-1 py-2 font-black border-b-2 border-indigo-600 text-indigo-700 transition-all";
+    }
 
-    function toggleViewMode() {{
+    function toggleViewMode() {
       const isStudent = appState.viewMode === 'student';
       appState.viewMode = isStudent ? 'console' : 'student';
       const toggleBtn = document.getElementById("toggle-console-btn");
       const btnText   = document.getElementById("mode-btn-text");
 
-      if (appState.viewMode === 'console') {{
+      if (appState.viewMode === 'console') {
         ['home-view','quiz-view','result-view'].forEach(id => document.getElementById(id).classList.add("hidden"));
         document.getElementById("console-view").classList.remove("hidden");
         btnText.textContent = "返回學生首頁";
         toggleBtn.className = "bg-white/80 backdrop-blur-sm border-2 border-emerald-100 text-emerald-700 text-xs md:text-sm font-bold px-4 py-2 rounded-xl shadow-sm hover:bg-emerald-50 transition-all flex items-center gap-1.5";
         refreshConsoleData();
-      }} else {{
+      } else {
         document.getElementById("console-view").classList.add("hidden");
         document.getElementById("home-view").classList.remove("hidden");
         btnText.textContent = "切換至教師主控台";
         toggleBtn.className = "bg-white/80 backdrop-blur-sm border-2 border-indigo-100 text-indigo-700 text-xs md:text-sm font-bold px-4 py-2 rounded-xl shadow-sm hover:bg-indigo-50 transition-all flex items-center gap-1.5";
-      }}
-    }}
+      }
+    }
 
     // ── 計時 ─────────────────────────────────────────────────────────────────
-    function startTimer() {{
+    function startTimer() {
       appState.elapsedSeconds = 0;
       updateTimerDisplay();
-      appState.timerInterval = setInterval(() => {{ appState.elapsedSeconds++; updateTimerDisplay(); }}, 1000);
-    }}
-    function updateTimerDisplay() {{
+      appState.timerInterval = setInterval(() => { appState.elapsedSeconds++; updateTimerDisplay(); }, 1000);
+    }
+    function updateTimerDisplay() {
       const m = Math.floor(appState.elapsedSeconds / 60);
       const s = appState.elapsedSeconds % 60;
-      document.getElementById("timer-display").textContent = `${{String(m).padStart(2,'0')}}:${{String(s).padStart(2,'0')}}`;
-    }}
-    function formatTime(totalSecs) {{
+      document.getElementById("timer-display").textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    }
+    function formatTime(totalSecs) {
       const m = Math.floor(totalSecs / 60), s = totalSecs % 60;
-      return m > 0 ? `${{m}}分${{s}}秒` : `${{s}}秒`;
-    }}
+      return m > 0 ? `${m}分${s}秒` : `${s}秒`;
+    }
 
-    function copySubmissionCode() {{
+    function copySubmissionCode() {
       const box = document.getElementById("submission-code-box");
       box.select();
       navigator.clipboard.writeText(box.value).then(() => alert("🎉 作答代碼已複製！"));
-    }}
+    }
 
-    function triggerCelebration(isPerfect) {{
+    function triggerCelebration(isPerfect) {
       if (!window.confetti) return;
-      if (isPerfect) {{
+      if (isPerfect) {
         const end = Date.now() + 2000;
-        const interval = setInterval(() => {{
+        const interval = setInterval(() => {
           if (Date.now() > end) return clearInterval(interval);
-          confetti({{ startVelocity:25, spread:360, ticks:50, zIndex:100, origin:{{ x:Math.random(), y:Math.random()-0.2 }} }});
-        }}, 200);
-      }} else {{
-        confetti({{ particleCount:80, spread:60, origin:{{ y:0.65 }} }});
-      }}
-    }}
+          confetti({ startVelocity:25, spread:360, ticks:50, zIndex:100, origin:{ x:Math.random(), y:Math.random()-0.2 } });
+        }, 200);
+      } else {
+        confetti({ particleCount:80, spread:60, origin:{ y:0.65 } });
+      }
+    }
 
-    function exportToPDF() {{
+    function exportToPDF() {
       const element = document.getElementById('report-card-container');
-      const opt = {{
+      const opt = {
         margin: 10,
-        filename: `99乘法成績單_${{appState.studentName}}_${{appState.studentId}}.pdf`,
-        image: {{ type:'jpeg', quality:0.98 }},
-        html2canvas: {{ scale:2, useCORS:true, letterRendering:true }},
-        jsPDF: {{ unit:'mm', format:'a4', orientation:'portrait' }}
-      }};
+        filename: `99乘法成績單_${appState.studentName}_${appState.studentId}.pdf`,
+        image: { type:'jpeg', quality:0.98 },
+        html2canvas: { scale:2, useCORS:true, letterRendering:true },
+        jsPDF: { unit:'mm', format:'a4', orientation:'portrait' }
+      };
       html2pdf().set(opt).from(element).save();
-    }}
+    }
 
-    async function exportToCSV() {{
+    async function exportToCSV() {
       const records = await loadAllRecords();
-      if (records.length === 0) {{ alert("無可用數據進行匯出"); return; }}
+      if (records.length === 0) { alert("無可用數據進行匯出"); return; }
       const headers = ["學號","姓名","得分","作答時間(秒)","日期","考題範圍"];
-      const rows = records.map(r => [r.studentId, r.studentName, r.score, r.elapsedSeconds, r.date, `"${{r.ranges.join(', ')}} 乘法"`]);
+      const rows = records.map(r => [r.studentId, r.studentName, r.score, r.elapsedSeconds, r.date, `"${r.ranges.join(', ')} 乘法"`]);
       const csvContent = [headers.join(","), ...rows.map(row => row.join(","))].join("\\r\\n");
-      const blob = new Blob(["\\uFEFF" + csvContent], {{ type:'text/csv;charset=utf-8;' }});
+      const blob = new Blob(["\\uFEFF" + csvContent], { type:'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.setAttribute("href", url);
@@ -1177,12 +1177,12 @@ HTML_CONTENT = f"""<!DOCTYPE html>
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-    }}
+    }
 
-    function restartQuiz() {{
+    function restartQuiz() {
       document.getElementById("result-view").classList.add("hidden");
       document.getElementById("home-view").classList.remove("hidden");
-    }}
+    }
   </script>
 </body>
 </html>"""
