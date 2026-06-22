@@ -292,8 +292,8 @@ HTML_CONTENT = """<!DOCTYPE html>
 
       <!-- 下一題 / 交卷按鈕 -->
       <div class="flex justify-end pt-2 border-t-2 border-slate-100">
-        <button id="next-btn"
-          class="hidden flex-1 py-3 px-3 rounded-xl font-bold text-base text-white bg-indigo-500 hover:bg-indigo-600 shadow-md transition-all flex items-center justify-center gap-1.5">
+        <button id="next-btn" onclick="handleNext()"
+          class="hidden w-full py-3 px-3 rounded-xl font-bold text-base text-white bg-indigo-500 hover:bg-indigo-600 shadow-md transition-all flex items-center justify-center gap-1.5">
           下一題 <i class="fa-solid fa-chevron-right"></i>
         </button>
       </div>
@@ -456,6 +456,7 @@ HTML_CONTENT = """<!DOCTYPE html>
       qTimerInterval: null,   // 每題計時器
       qSecondsLeft: QUESTION_TIME,
       answered: false,        // 本題是否已作答
+      nextAction: null,         // 'finish' | 'next:N'
     };
 
     // ── 初始化 ────────────────────────────────────────────────────────────────
@@ -579,10 +580,10 @@ HTML_CONTENT = """<!DOCTYPE html>
       // 選項
       renderOptions(q, null, false);
 
-      // 下一題按鈕：每題開始時隱藏，等作答後由各分支動態顯示
+      // 下一題按鈕：每題開始時隱藏
+      appState.nextAction = null;
       const nextBtn = document.getElementById('next-btn');
-      nextBtn.classList.add('hidden');
-      nextBtn.onclick = null;
+      nextBtn.style.display = 'none';
 
       // 啟動每題計時
       appState.qTimerInterval = setInterval(() => {
@@ -686,20 +687,18 @@ HTML_CONTENT = """<!DOCTYPE html>
         hint.innerHTML = `<i class="fa-solid fa-star text-amber-500 mr-1"></i>答對！得 <span class="text-amber-600 font-black">${earned}</span> 分（用了 ${secsUsed} 秒）`;
         hint.className = 'text-xs font-bold text-emerald-600';
         const nextBtn = document.getElementById('next-btn');
-        nextBtn.classList.add('hidden');
+        nextBtn.style.display = 'none';
         setTimeout(() => {
-          nextBtn.classList.remove('hidden');
           if (qIndex === appState.questions.length - 1) {
-            // 最後一題答對 → 查看成績
-            nextBtn.className = 'flex-1 py-3 px-3 rounded-xl font-bold text-base text-white bg-emerald-500 hover:bg-emerald-600 transition-all flex items-center justify-center gap-1.5 shadow-md';
+            appState.nextAction = 'finish';
+            nextBtn.className = 'w-full py-3 px-3 rounded-xl font-bold text-base text-white bg-emerald-500 hover:bg-emerald-600 transition-all flex items-center justify-center gap-1.5 shadow-md';
             nextBtn.innerHTML = '查看成績 📊';
-            nextBtn.onclick = () => finishQuiz();
           } else {
-            // 還有下一題 → 下一題
-            nextBtn.className = 'flex-1 py-3 px-3 rounded-xl font-bold text-base text-white bg-indigo-500 hover:bg-indigo-600 transition-all flex items-center justify-center gap-1.5 shadow-md';
+            appState.nextAction = 'next:' + (qIndex + 1);
+            nextBtn.className = 'w-full py-3 px-3 rounded-xl font-bold text-base text-white bg-indigo-500 hover:bg-indigo-600 transition-all flex items-center justify-center gap-1.5 shadow-md';
             nextBtn.innerHTML = '下一題 <i class="fa-solid fa-chevron-right"></i>';
-            nextBtn.onclick = () => loadQuestion(qIndex + 1);
           }
+          nextBtn.style.display = 'flex';
         }, 1000);
       } else {
         // ❌ 答錯 → 顯示錯誤提示，啟用「下一題」繼續作答
@@ -707,16 +706,16 @@ HTML_CONTENT = """<!DOCTYPE html>
         hint.className = 'text-xs font-bold text-rose-600';
 
         const nextBtn = document.getElementById('next-btn');
-        nextBtn.classList.remove('hidden');
         if (qIndex === appState.questions.length-1) {
-          nextBtn.className = 'flex-1 py-3 px-3 rounded-xl font-bold text-base text-white bg-emerald-500 hover:bg-emerald-600 transition-all flex items-center justify-center gap-1.5 shadow-md';
+          appState.nextAction = 'finish';
+          nextBtn.className = 'w-full py-3 px-3 rounded-xl font-bold text-base text-white bg-emerald-500 hover:bg-emerald-600 transition-all flex items-center justify-center gap-1.5 shadow-md';
           nextBtn.innerHTML = '查看成績 📊';
-          nextBtn.onclick = () => finishQuiz();
         } else {
-          nextBtn.className = 'flex-1 py-3 px-3 rounded-xl font-bold text-base text-white bg-indigo-500 hover:bg-indigo-600 transition-all flex items-center justify-center gap-1.5 shadow-md';
+          appState.nextAction = 'next:' + (qIndex + 1);
+          nextBtn.className = 'w-full py-3 px-3 rounded-xl font-bold text-base text-white bg-indigo-500 hover:bg-indigo-600 transition-all flex items-center justify-center gap-1.5 shadow-md';
           nextBtn.innerHTML = '再試一題 <i class="fa-solid fa-chevron-right"></i>';
-          nextBtn.onclick = () => loadQuestion(qIndex + 1);
         }
+        nextBtn.style.display = 'flex';
       }
     }
 
@@ -738,20 +737,31 @@ HTML_CONTENT = """<!DOCTYPE html>
       hint.className = 'text-xs font-bold text-slate-500';
 
       const nextBtn = document.getElementById('next-btn');
-      nextBtn.classList.remove('hidden');
       const idx = appState.currentQuestionIndex;
       if (idx === appState.questions.length-1) {
-        nextBtn.className = 'flex-1 py-3 px-3 rounded-xl font-bold text-base text-white bg-emerald-500 hover:bg-emerald-600 transition-all flex items-center justify-center gap-1.5 shadow-md';
+        appState.nextAction = 'finish';
+        nextBtn.className = 'w-full py-3 px-3 rounded-xl font-bold text-base text-white bg-emerald-500 hover:bg-emerald-600 transition-all flex items-center justify-center gap-1.5 shadow-md';
         nextBtn.innerHTML = '查看成績 📊';
-        nextBtn.onclick = () => finishQuiz();
       } else {
-        nextBtn.className = 'flex-1 py-3 px-3 rounded-xl font-bold text-base text-white bg-indigo-500 hover:bg-indigo-600 transition-all flex items-center justify-center gap-1.5 shadow-md';
+        appState.nextAction = 'next:' + (idx + 1);
+        nextBtn.className = 'w-full py-3 px-3 rounded-xl font-bold text-base text-white bg-indigo-500 hover:bg-indigo-600 transition-all flex items-center justify-center gap-1.5 shadow-md';
         nextBtn.innerHTML = '再試一題 <i class="fa-solid fa-chevron-right"></i>';
-        nextBtn.onclick = () => loadQuestion(idx + 1);
       }
+      nextBtn.style.display = 'flex';
     }
 
-    // 按鈕 onclick 由各分支動態綁定
+    // ── 統一按鈕處理（HTML onclick 呼叫）────────────────────────────────────
+    function handleNext() {
+      const action = appState.nextAction;
+      if (!action) return;
+      appState.nextAction = null;
+      if (action === 'finish') {
+        finishQuiz();
+      } else if (action.startsWith('next:')) {
+        const nextIndex = parseInt(action.split(':')[1], 10);
+        loadQuestion(nextIndex);
+      }
+    }
 
     // ── 結算 ──────────────────────────────────────────────────────────────────
     async function finishQuiz() {
