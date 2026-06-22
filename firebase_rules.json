@@ -1,0 +1,14 @@
+{
+  "rules": {
+    "scores": {
+      ".read": true,
+      ".write": true
+    },
+    "visitors": {
+      "count": {
+        ".read": true,
+        ".write": true
+      }
+    }
+  }
+}
