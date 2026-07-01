@@ -302,9 +302,11 @@ def page_home():
 
     # Links
     st.markdown("### 🔗 更多測驗挑戰")
+    st.info("📱 若您是從 LINE 訊息點進本頁，下方連結可能無法點擊，"
+            "請點右上角「⋯」選擇「使用外部瀏覽器開啟」後再點連結。")
     html = '<div class="links-grid">'
     for icon, label, url in LINKS:
-        html += f'<a class="link-card" href="{url}" target="_blank">{icon} {label}</a>'
+        html += f'<a class="link-card" href="{url}">{icon} {label}</a>'
     html += "</div>"
     st.markdown(html, unsafe_allow_html=True)
 
