@@ -283,15 +283,6 @@ html, body, [class*="css"] { font-family: 'Nunito', sans-serif; }
 .lb-score { color: #e91e63; font-size: 1.05rem; }
 .lb-acc   { color: #43a047; font-size: 0.88rem; }
 
-.links-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px,1fr)); gap: 0.55rem; margin-top: 0.5rem; }
-.link-card {
-    display: flex; align-items: center; gap: 0.5rem;
-    padding: 0.55rem 0.9rem; background: rgba(255,255,255,0.78);
-    border-radius: 12px; text-decoration: none; color: #37474f;
-    font-weight: 700; font-size: 0.88rem; border: 2px solid #e0e0e0;
-}
-.link-card:hover { background: #bbdefb; border-color: #90caf9; color: #1565c0; }
-
 .visitor-badge { text-align: center; color: #78909c; font-size: 0.88rem; margin-top: 0.5rem; }
 
 .stButton > button {
@@ -299,6 +290,13 @@ html, body, [class*="css"] { font-family: 'Nunito', sans-serif; }
     font-family: 'Nunito', sans-serif !important;
     font-weight: 700 !important;
     font-size: 1.1rem !important;
+}
+
+.stLinkButton > a {
+    border-radius: 14px !important;
+    font-family: 'Nunito', sans-serif !important;
+    font-weight: 700 !important;
+    font-size: 0.95rem !important;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -430,11 +428,10 @@ def page_home():
 
     # Links
     st.markdown("### 🔗 更多測驗挑戰")
-    html = '<div class="links-grid">'
-    for icon, label, url in LINKS:
-        html += f'<a class="link-card" href="{url}" target="_blank">{icon} {label}</a>'
-    html += "</div>"
-    st.markdown(html, unsafe_allow_html=True)
+    cols = st.columns(2)
+    for i, (icon, label, url) in enumerate(LINKS):
+        with cols[i % 2]:
+            st.link_button(f"{icon} {label}", url, use_container_width=True)
 
     v = get_visitor_count()
     st.markdown(f'<div class="visitor-badge">👥 累計訪客人數：{v:,}</div>',
