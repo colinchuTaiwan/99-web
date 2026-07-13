@@ -448,6 +448,11 @@ def page_home():
         html += f'<a class="link-card" href="{with_external_browser(url)}" target="_blank">{icon} {label}</a>'
     html += "</div>"
     st.markdown(html, unsafe_allow_html=True)
+    st.caption(
+        "💡 若從 LINE／Instagram 等 App 開啟本頁面，點擊連結沒反應時，"
+        "請點畫面右上角「⋯」選單 → 選擇「使用瀏覽器開啟」（或「在 Chrome 中開啟」），"
+        "即可正常連到測驗網站。"
+    )
 
     v = get_visitor_count()
     st.markdown(f'<div class="visitor-badge">👥 累計訪客人數：{v:,}</div>',
