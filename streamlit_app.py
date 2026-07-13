@@ -1,7 +1,7 @@
 import streamlit as st
 import random
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 import pytz
 
 # ── Page config ───────────────────────────────────────────────────────────────
@@ -71,27 +71,153 @@ def save_score(name, score, correct, total, elapsed, accuracy):
     except Exception:
         pass
 
-def get_leaderboard(mode="all"):
+# ── 安全解析：時間 / 數值 ──────────────────────────────────────────────────────
+
+def parse_timestamp(ts_str):
+    """
+    將 timestamp 字串安全解析為帶時區的 datetime。
+    - 缺少、非字串、格式錯誤 → 回傳 None（不可用最早時間頂替，
+      否則髒資料會因為「時間最早」而在同分排序中被誤判為第一名）。
+    - 舊資料若沒有時區資訊，視為台灣時間（Asia/Taipei）。
+    """
+    if not ts_str or not isinstance(ts_str, str):
+        return None
+    try:
+        dt = datetime.fromisoformat(ts_str)
+    except (ValueError, TypeError):
+        return None
+
+    if dt.tzinfo is None:
+        dt = TW_TZ.localize(dt)
+    else:
+        dt = dt.astimezone(TW_TZ)
+    return dt
+
+
+def parse_number(value):
+    """
+    將分數/用時等數值安全轉換為 float。
+    考量舊資料可能是字串、None、bool 或其他損毀型態，
+    無法解析時一律回傳 None，交由呼叫端略過該筆紀錄。
+    """
+    if value is None or isinstance(value, bool):
+        return None
+    if isinstance(value, (int, float)):
+        return float(value)
+    if isinstance(value, str):
+        try:
+            return float(value.strip())
+        except (ValueError, TypeError):
+            return None
+    return None
+
+# ── 日曆區間排行榜 ────────────────────────────────────────────────────────────
+
+def get_calendar_range(period, now=None):
+    """
+    回傳指定排行榜期間的開始時間與結束時間（皆含時區，Asia/Taipei）。
+    採用「真正的日曆區間」而非固定天數的滑動視窗或裸週次比對，
+    並正確處理大小月、閏年與跨年週次。
+    """
+    if now is None:
+        now = get_now_tw()
+    elif now.tzinfo is None:
+        now = TW_TZ.localize(now)
+    else:
+        now = now.astimezone(TW_TZ)
+
+    def day_start(d):
+        return d.replace(hour=0, minute=0, second=0, microsecond=0)
+
+    def day_end(d):
+        return d.replace(hour=23, minute=59, second=59, microsecond=999999)
+
+    if period == "本日":
+        start = day_start(now)
+        end   = day_end(now)
+
+    elif period == "本週":
+        monday = now - timedelta(days=now.weekday())   # 週一為一週開始
+        sunday = monday + timedelta(days=6)
+        start  = day_start(monday)
+        end    = day_end(sunday)
+
+    elif period == "本月":
+        start = day_start(now.replace(day=1))
+        if now.month == 12:
+            next_month_first = now.replace(year=now.year + 1, month=1, day=1)
+        else:
+            next_month_first = now.replace(month=now.month + 1, day=1)
+        end = day_end(next_month_first - timedelta(days=1))
+
+    elif period == "本季":
+        q_start_month = ((now.month - 1) // 3) * 3 + 1     # 1, 4, 7, 10
+        start = day_start(now.replace(month=q_start_month, day=1))
+        q_end_month = q_start_month + 2
+        if q_end_month == 12:
+            next_q_first = now.replace(year=now.year + 1, month=1, day=1)
+        else:
+            next_q_first = now.replace(month=q_end_month + 1, day=1)
+        end = day_end(next_q_first - timedelta(days=1))
+
+    elif period == "本年度":
+        start = day_start(now.replace(month=1, day=1))
+        end   = day_end(now.replace(month=12, day=31))
+
+    else:
+        # 「歷史排行」或未知 period：回傳全時間範圍（呼叫端通常不會用到）
+        start = TW_TZ.localize(datetime.min.replace(year=1971))
+        end   = now
+
+    return start, end
+
+
+def get_leaderboard(period="歷史排行"):
+    """
+    依期間回傳排行榜（前 20 名），依分數由高到低、同分依用時由短到長排序。
+    任何 timestamp/score/elapsed 解析失敗的髒資料，一律安全略過。
+    """
     if not _firebase_ok or _fdb is None:
         return []
     try:
         data = _fdb.reference("scores").get()
-        if not data:
-            return []
-        now = get_now_tw()
-        entries = []
-        for v in data.values():
-            if mode == "week" and v.get("week") != int(now.strftime("%V")):
-                continue
-            if mode == "month" and (v.get("month") != now.month or v.get("year") != now.year):
-                continue
-            if mode == "year" and v.get("year") != now.year:
-                continue
-            entries.append(v)
-        entries.sort(key=lambda x: (-x.get("score", 0), x.get("elapsed", 9999)))
-        return entries[:20]
     except Exception:
         return []
+    if not data:
+        return []
+
+    use_time_filter = (period != "歷史排行")
+    if use_time_filter:
+        start, end = get_calendar_range(period)
+
+    entries = []
+    for v in data.values():
+        if not isinstance(v, dict):
+            continue
+
+        ts = parse_timestamp(v.get("timestamp"))
+        if ts is None:
+            continue
+
+        score = parse_number(v.get("score"))
+        if score is None:
+            continue
+
+        elapsed = parse_number(v.get("elapsed"))
+        if elapsed is None:
+            continue
+
+        if use_time_filter and not (start <= ts <= end):
+            continue
+
+        entry = dict(v)
+        entry["score"]   = score
+        entry["elapsed"] = elapsed
+        entry["_ts"]      = ts
+        entries.append(entry)
+
+    entries.sort(key=lambda x: (-x["score"], x["elapsed"]))
+    return entries[:20]
 
 # ── CSS ───────────────────────────────────────────────────────────────────────
 st.markdown("""
@@ -302,11 +428,9 @@ def page_home():
 
     # Links
     st.markdown("### 🔗 更多測驗挑戰")
-    st.info("📱 若您是從 LINE 訊息點進本頁，下方連結可能無法點擊，"
-            "請點右下角「:」選擇「使用外部瀏覽器開啟」後再點連結。")
     html = '<div class="links-grid">'
     for icon, label, url in LINKS:
-        html += f'<a class="link-card" href="{url}">{icon} {label}</a>'
+        html += f'<a class="link-card" href="{url}" target="_blank">{icon} {label}</a>'
     html += "</div>"
     st.markdown(html, unsafe_allow_html=True)
 
@@ -477,12 +601,13 @@ def page_result():
 
 def _render_leaderboard_section():
     st.markdown("### 🏆 排行榜")
-    tabs = st.tabs(["🏆 總排行", "📅 年排行", "🗓️ 月排行", "📆 週排行"])
-    for tab, mode in zip(tabs, ["all","year","month","week"]):
+    periods = ["本日", "本週", "本月", "本季", "本年度", "歷史排行"]
+    tabs = st.tabs([f"{'📅' if p != '歷史排行' else '🏆'} {p}" for p in periods])
+    for tab, period in zip(tabs, periods):
         with tab:
-            entries = get_leaderboard(mode)
+            entries = get_leaderboard(period)
             if not entries:
-                st.info("還沒有記錄，快去挑戰吧！")
+                st.info("目前尚無符合條件的成績紀錄，快去挑戰吧！")
             else:
                 for rank, e in enumerate(entries):
                     medal = MEDAL[rank] if rank < len(MEDAL) else "🔢"
@@ -490,7 +615,7 @@ def _render_leaderboard_section():
                     <div class="lb-row">
                         <span class="lb-medal">{medal}</span>
                         <span class="lb-name">{e.get('name','—')}</span>
-                        <span class="lb-score">{e.get('score',0)} 分</span>
+                        <span class="lb-score">{e.get('score',0):.0f} 分</span>
                         <span class="lb-acc">{e.get('accuracy',0):.1f}%</span>
                         <span style="color:#90a4ae;font-size:.85rem">{e.get('correct',0)}/{e.get('total',0)}</span>
                     </div>""", unsafe_allow_html=True)
