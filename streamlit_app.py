@@ -450,7 +450,7 @@ def page_home():
     st.markdown(html, unsafe_allow_html=True)
     st.caption(
         "💡 若從 LINE／Instagram 等 App 開啟本頁面，點擊連結沒反應時，"
-        "請點畫面右上角「⋯」選單 → 選擇「使用瀏覽器開啟」（或「在 Chrome 中開啟」），"
+        "請點畫面右下角「:」選單 → 選擇「使用瀏覽器開啟」（或「在 Chrome 中開啟」），"
         "即可正常連到測驗網站。"
     )
 
