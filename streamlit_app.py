@@ -68,6 +68,7 @@ def save_score(name, score, correct, total, elapsed, accuracy):
             "year": now.year, "month": now.month,
             "week": int(now.strftime("%V")),
         })
+        get_leaderboard.clear()   # 清除快取，榜單立刻更新
     except Exception:
         pass
 
@@ -172,6 +173,7 @@ def get_calendar_range(period, now=None):
     return start, end
 
 
+@st.cache_data(ttl=30)   # 榜單快取 30 秒（依 period 分別快取）
 def get_leaderboard(period="歷史排行"):
     """
     依期間回傳排行榜（前 20 名），依分數由高到低、同分依用時由短到長排序。
