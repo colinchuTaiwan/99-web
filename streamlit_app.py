@@ -320,6 +320,17 @@ LINKS = [
 MEDAL = ["🥇","🥈","🥉"] + ["🔢"]*17
 TIME_PER_Q = 30
 
+def with_external_browser(url: str) -> str:
+    """
+    在網址加上 openExternalBrowser=1。
+    LINE / 部分 App 內建瀏覽器偵測到此參數會改用手機「系統預設瀏覽器」
+    （Chrome/Safari）開啟連結，避開內建 webview 對 Streamlit 這類
+    重度使用 WebSocket/JS 網站常見的載入失敗問題。
+    對一般瀏覽器（Chrome 等）無影響，該參數會被目標網站忽略。
+    """
+    sep = "&" if "?" in url else "?"
+    return f"{url}{sep}openExternalBrowser=1"
+
 # ── Session helpers ───────────────────────────────────────────────────────────
 def ss(key, default=None):
     if key not in st.session_state:
@@ -434,7 +445,7 @@ def page_home():
     st.markdown("### 🔗 更多測驗挑戰")
     html = '<div class="links-grid">'
     for icon, label, url in LINKS:
-        html += f'<a class="link-card" href="{url}" target="_top">{icon} {label}</a>'
+        html += f'<a class="link-card" href="{with_external_browser(url)}" target="_blank">{icon} {label}</a>'
     html += "</div>"
     st.markdown(html, unsafe_allow_html=True)
 
