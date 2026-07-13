@@ -283,8 +283,6 @@ html, body, [class*="css"] { font-family: 'Nunito', sans-serif; }
 .lb-score { color: #e91e63; font-size: 1.05rem; }
 .lb-acc   { color: #43a047; font-size: 0.88rem; }
 
-.visitor-badge { text-align: center; color: #78909c; font-size: 0.88rem; margin-top: 0.5rem; }
-
 .links-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px,1fr)); gap: 0.55rem; margin-top: 0.5rem; }
 .link-card {
     display: flex; align-items: center; gap: 0.5rem;
@@ -434,7 +432,7 @@ def page_home():
     st.markdown("### 🔗 更多測驗挑戰")
     html = '<div class="links-grid">'
     for icon, label, url in LINKS:
-        html += f'<a class="link-card" href="{url}" target="_top">{icon} {label}</a>'
+        html += f'<a class="link-card" href="{url}" target="_blank">{icon} {label}</a>'
     html += "</div>"
     st.markdown(html, unsafe_allow_html=True)
 
