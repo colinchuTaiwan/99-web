@@ -176,7 +176,7 @@ def get_calendar_range(period, now=None):
 @st.cache_data(ttl=30)   # 榜單快取 30 秒（依 period 分別快取）
 def get_leaderboard(period="歷史排行"):
     """
-    依期間回傳排行榜（前 20 名），依分數由高到低、同分依用時由短到長排序。
+    依期間回傳排行榜（前 10 名），依分數由高到低、同分依用時由短到長排序。
     任何 timestamp/score/elapsed 解析失敗的髒資料，一律安全略過。
     """
     if not _firebase_ok or _fdb is None:
@@ -612,7 +612,10 @@ def _render_leaderboard_section():
                 st.info("目前尚無符合條件的成績紀錄，快去挑戰吧！")
             else:
                 for rank, e in enumerate(entries):
-                    medal = MEDAL[rank] if rank < len(MEDAL) else "🔢"
+                    if rank < 3:
+                        medal = MEDAL[rank]
+                    else:
+                        medal = f"#{rank+1}"
                     st.markdown(f"""
                     <div class="lb-row">
                         <span class="lb-medal">{medal}</span>
