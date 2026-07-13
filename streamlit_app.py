@@ -217,7 +217,7 @@ def get_leaderboard(period="歷史排行"):
         entries.append(entry)
 
     entries.sort(key=lambda x: (-x["score"], x["elapsed"]))
-    return entries[:20]
+    return entries[:10]
 
 # ── CSS ───────────────────────────────────────────────────────────────────────
 st.markdown("""
