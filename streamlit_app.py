@@ -46,7 +46,7 @@ def increment_visitor():
         _fdb.reference("visitors/count").transaction(lambda c: (c or 0) + 1)
     except Exception:
         pass
-
+@st.cache_data(ttl=300)  # 5 分鐘快取，避免每次 rerun 都打 Firebase
 def get_visitor_count():
     if not _firebase_ok or _fdb is None:
         return 0
