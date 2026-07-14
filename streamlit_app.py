@@ -40,6 +40,16 @@ def get_now_tw():
 
 # ── Firebase helpers (all safe) ───────────────────────────────────────────────
 def increment_visitor():
+    """
+    將訪客計數 +1。
+
+    - 用 Firebase .transaction() 做原子遞增，確保多人同時觸發時
+      不會互相覆蓋、漏算。
+    - 用 st.session_state["visitor_counted"] 當作旗標，確保同一個
+      瀏覽器 session（同一次造訪）只會被計數一次；即使使用者在這次
+      造訪中重新整理頁面、回首頁重新按一次「開始測驗」，也不會被
+      重複累加。
+    """
     if not _firebase_ok or _fdb is None:
         return
     if st.session_state.get("visitor_counted"):
@@ -49,8 +59,19 @@ def increment_visitor():
         st.session_state["visitor_counted"] = True
     except Exception:
         pass
+
 @st.cache_data(ttl=300)  # 5 分鐘快取，避免每次 rerun 都打 Firebase
 def get_visitor_count():
+    """
+    讀取目前的訪客總數（不會遞增）。
+
+    加上 @st.cache_data(ttl=300) 是因為：計數過一次之後，之後每次
+    Streamlit rerun（例如答題、倒數計時觸發的 rerun）仍然需要顯示
+    最新的訪客數字，若不加快取，每次 rerun 都會對 Firebase 發出一次
+    即時讀取請求，使用人數多時會拖慢頁面、也會消耗 Firebase 的讀取
+    額度。快取 5 分鐘內看到的數字可能略舊，但對「訪客人數」這種
+    展示性質的數字來說可以接受。
+    """
     if not _firebase_ok or _fdb is None:
         return 0
     try:
@@ -318,7 +339,7 @@ LINKS = [
     ("🏛️", "公民測驗挑戰網", "https://civics-examine.streamlit.app/"),
     ("🧬", "生物測驗挑戰網", "https://biology-examine.streamlit.app/"),
     ("🌍", "地球科學測驗網", "https://earth-science-examine.streamlit.app/"),
-    ("📋", "公文專案管理系統", "https://doc-project.streamlit.app/"),
+    ("🌏", "地理測驗挑戰網", "https://geography-examine.streamlit.app/"),
 ]
 MEDAL = ["🥇","🥈","🥉"] + ["🔢"]*17
 TIME_PER_Q = 30
