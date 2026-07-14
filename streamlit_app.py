@@ -42,8 +42,11 @@ def get_now_tw():
 def increment_visitor():
     if not _firebase_ok or _fdb is None:
         return
+    if st.session_state.get("visitor_counted"):
+        return
     try:
         _fdb.reference("visitors/count").transaction(lambda c: (c or 0) + 1)
+        st.session_state["visitor_counted"] = True
     except Exception:
         pass
 @st.cache_data(ttl=300)  # 5 分鐘快取，避免每次 rerun 都打 Firebase
